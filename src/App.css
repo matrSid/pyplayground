@@ -1,38 +1,112 @@
-.App {
-  text-align: center;
+body {
+  background-color: #272822; /* Dark background color */
+  color: #F8F8F2; /* Text color */
+  margin: 0;
+  font-family: 'Fira Code', monospace; /* Apply font family to the body */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  flex-direction: row;
+  align-items: flex-start;
+  height: calc(100vh - 40px); /* Adjust height to account for footer */
+  overflow: hidden; /* Prevent overflow due to fixed footer */
+  position: relative; /* To position the HTML Playground button */
+}
+
+.editor-container {
+  flex: 1;
+  padding: 10px;
+  background-color: #272822; /* Background color for the editor container */
+}
+
+.output-container {
+  flex: 1;
+  padding: 10px;
+  background-color: #1E1E1E; /* Slightly different background for output */
+  color: #F8F8F2; /* Text color for the output */
+  border-left: 1px solid #ccc;
+  overflow-y: auto; /* Scroll if the content overflows */
+}
+
+.python-editor {
+  height: 300px;
+  background-color: #272822; /* Background color for the AceEditor */
+  color: #F8F8F2; /* Text color for the AceEditor */
+  font-family: 'Fira Code', monospace; /* Font family for the AceEditor */
+  border: 1px solid #ccc;
+}
+
+.run-button,
+.clear-button {
+  background-color: #3d994c; /* Button background color */
+  color: white; /* Button text color */
+  border: none; /* Remove default border */
+  padding: 10px 20px; /* Padding for the button */
+  border-radius: 20px; /* Smooth curves */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Font size */
+  font-family: 'Fira Code', monospace; /* Font family */
+  margin-right: 10px; /* Space between buttons */
+}
+
+.clear-button {
+  background-color: #d9534f; /* Red background color for clear button */
+}
+
+.run-button:disabled {
+  background-color: #808080; /* Grey background color for disabled buttons */
+  cursor: not-allowed; /* Not-allowed cursor for disabled buttons */
+}
+
+.run-button:hover {
+  background-color: #358c3f; /* Slightly darker green on hover */
+}
+
+.clear-button:hover {
+  background-color: #c9302c; /* Slightly darker red on hover */
+}
+
+pre {
+  white-space: pre-wrap; /* This makes the text wrap within the pre element */
+  word-wrap: break-word; /* This ensures that long words break to fit within the pre element */
+  background-color: #1E1E1E; /* Background color for the pre element */
+  color: #F8F8F2; /* Text color for the pre element */
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.footer {
+  background-color: #272822;
+  color: #F8F8F2;
+  text-align: center;
+  padding: 10px 0;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 14px;
+  font-family: 'Fira Code', monospace;
+}
+
+.html-playground-button {
+  position: fixed;
+  bottom: 60px; /* Above the footer */
+  right: 20px;
+  background-color: #3d994c;
   color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Fira Code', monospace;
+  text-decoration: none;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.html-playground-button:hover {
+  background-color: #358c3f; /* Slightly darker green on hover */
 }

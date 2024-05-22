@@ -11,3 +11,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+/* PythonPlayground.css */
+.python-editor {
+  height: 300px;
+  background-color: #272822; /* Background color */
+  color: #F8F8F2; /* Text color */
+  font-family: 'Courier New', Courier, monospace; /* Font family */
+}
+
