@@ -10,6 +10,10 @@ const PythonPlayground = () => {
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
 
+  const clearOutput = () => {
+    setOutput('');
+  };
+
   const executePythonCode = () => {
     setIsRunning(true);
 
@@ -22,7 +26,15 @@ const PythonPlayground = () => {
         return Sk.builtinFiles["files"][filename];
       },
       execLimit: null,
-      yieldLimit: 100
+      yieldLimit: 100,
+      inputfun: (prompt) => window.prompt(prompt),
+      inputfunTakesPrompt: true
+    });
+
+    Sk.builtinFiles.files["<stdin>"] = Sk.builtinFiles.files["<stdin>"] || "";
+    Sk.builtins.clear = new Sk.builtin.func(() => {
+      clearOutput();
+      return Sk.builtin.none.none$;
     });
 
     Sk.misceval.asyncToPromise(() => {
@@ -35,10 +47,6 @@ const PythonPlayground = () => {
       console.error("Error executing Python code:", err.toString());
       setIsRunning(false);
     });
-  };
-
-  const clearConsole = () => {
-    setOutput('');
   };
 
   return (
@@ -65,7 +73,7 @@ const PythonPlayground = () => {
         />
         <br />
         <button className="run-button" onClick={executePythonCode} disabled={isRunning}>Run</button>
-        <button className="clear-button" onClick={clearConsole}>Clear Console</button>
+        <button className="clear-button" onClick={clearOutput}>Clear Console</button>
       </div>
       <div className="output-container">
         <h3>Output:</h3>
