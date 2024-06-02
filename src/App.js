@@ -33,6 +33,7 @@ const PythonPlayground = () => {
 
     // Custom time module with sleep function
     const timeModule = new Sk.builtin.module({
+      __name__: new Sk.builtin.str("time"),
       sleep: new Sk.builtin.func(function (seconds) {
         return new Promise(resolve => setTimeout(resolve, Sk.ffi.remapToJs(seconds) * 1000));
       })
@@ -40,6 +41,7 @@ const PythonPlayground = () => {
 
     // Custom random module with choice function
     const randomModule = new Sk.builtin.module({
+      __name__: new Sk.builtin.str("random"),
       choice: new Sk.builtin.func(function (seq) {
         const index = Math.floor(Math.random() * Sk.ffi.remapToJs(seq).length);
         return seq.mp$subscript(index);
