@@ -31,24 +31,16 @@ const PythonPlayground = () => {
       inputfunTakesPrompt: true
     });
 
-    // Custom time module with sleep function
-    const timeModule = {
-      sleep: new Sk.builtin.func(function (seconds) {
-        return new Promise(resolve => setTimeout(resolve, Sk.ffi.remapToJs(seconds) * 1000));
-      })
-    };
+    // Custom sleep function
+    Sk.builtins.sleep = new Sk.builtin.func(function (seconds) {
+      return new Promise(resolve => setTimeout(resolve, Sk.ffi.remapToJs(seconds) * 1000));
+    });
 
-    // Custom random module with choice function
-    const randomModule = {
-      choice: new Sk.builtin.func(function (seq) {
-        const index = Math.floor(Math.random() * Sk.ffi.remapToJs(seq).length);
-        return seq.mp$subscript(index);
-      })
-    };
-
-    // Register the custom modules
-    Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str('time'), Sk.builtin.module({ __name__: new Sk.builtin.str("time"), ...timeModule }));
-    Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str('random'), Sk.builtin.module({ __name__: new Sk.builtin.str("random"), ...randomModule }));
+    // Custom choice function
+    Sk.builtins.choice = new Sk.builtin.func(function (seq) {
+      const index = Math.floor(Math.random() * Sk.ffi.remapToJs(seq).length);
+      return seq.mp$subscript(index);
+    });
 
     // Custom clear function
     Sk.builtins.clear = new Sk.builtin.func(() => {
