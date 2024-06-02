@@ -33,7 +33,9 @@ const PythonPlayground = () => {
 
     // Custom sleep function
     Sk.builtins.sleep = new Sk.builtin.func(function (seconds) {
-      return new Promise(resolve => setTimeout(resolve, Sk.ffi.remapToJs(seconds) * 1000));
+      return Sk.misceval.promiseToSuspension(
+        new Promise(resolve => setTimeout(resolve, Sk.ffi.remapToJs(seconds) * 1000))
+      );
     });
 
     // Custom choice function
