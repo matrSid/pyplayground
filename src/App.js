@@ -31,7 +31,30 @@ const PythonPlayground = () => {
       inputfunTakesPrompt: true
     });
 
+    // Custom time module
     Sk.builtinFiles.files["<stdin>"] = Sk.builtinFiles.files["<stdin>"] || "";
+
+    Sk.builtins.time = Sk.misceval.buildClass({
+      __init__: function (self) {
+        self.sleep = new Sk.builtin.func(function (seconds) {
+          return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+        });
+      }
+    }, "time", []);
+
+    // Custom random module
+    Sk.builtins.random = Sk.misceval.buildClass({
+      __init__: function (self) {
+        self.random = new Sk.builtin.func(function () {
+          return Math.random();
+        });
+        self.randint = new Sk.builtin.func(function (a, b) {
+          return Math.floor(Math.random() * (b - a + 1)) + a;
+        });
+      }
+    }, "random", []);
+
+    // Custom clear function
     Sk.builtins.clear = new Sk.builtin.func(() => {
       clearOutput();
       return Sk.builtin.none.none$;
