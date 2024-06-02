@@ -51,6 +51,10 @@ const PythonPlayground = () => {
         self.randint = new Sk.builtin.func(function (a, b) {
           return Math.floor(Math.random() * (b - a + 1)) + a;
         });
+        self.choice = new Sk.builtin.func(function (seq) {
+          const index = Math.floor(Math.random() * seq.length);
+          return seq[index];
+        });
       }
     }, "random", []);
 
