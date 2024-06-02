@@ -32,27 +32,30 @@ const PythonPlayground = () => {
     });
 
     // Custom time module
-    Sk.builtins.time = Sk.misceval.buildClass({
-      __init__: function (self) {},
+    const timeModule = {
       sleep: new Sk.builtin.func(function (seconds) {
-        return new Promise(resolve => setTimeout(resolve, seconds * 1000));
-      }),
-    }, "time", []);
+        return new Promise(resolve => setTimeout(resolve, Sk.ffi.remapToJs(seconds) * 1000));
+      })
+    };
 
     // Custom random module
-    Sk.builtins.random = Sk.misceval.buildClass({
-      __init__: function (self) {},
+    const randomModule = {
       random: new Sk.builtin.func(function () {
         return Math.random();
       }),
       randint: new Sk.builtin.func(function (a, b) {
-        return Math.floor(Math.random() * (b - a + 1)) + a;
+        a = Sk.ffi.remapToJs(a);
+        b = Sk.ffi.remapToJs(b);
+        return Sk.ffi.remapToPy(Math.floor(Math.random() * (b - a + 1)) + a);
       }),
       choice: new Sk.builtin.func(function (seq) {
-        const index = Math.floor(Math.random() * seq.length);
-        return seq[index];
-      }),
-    }, "random", []);
+        const index = Math.floor(Math.random() * Sk.ffi.remapToJs(seq).length);
+        return seq.mp$subscript(index);
+      })
+    };
+
+    Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str('time'), timeModule);
+    Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str('random'), randomModule);
 
     // Custom clear function
     Sk.builtins.clear = new Sk.builtin.func(() => {
@@ -88,10 +91,10 @@ const PythonPlayground = () => {
           editorProps={{
             $blockScrolling: true,
           }}
-          setOptions={{ 
-            enableBasicAutocompletion: true, 
+          setOptions={{
+            enableBasicAutocompletion: true,
             enableLiveAutocompletion: true,
-            fontFamily: 'Fira Code, monospace' 
+            fontFamily: 'Fira Code, monospace'
           }}
         />
         <br />
