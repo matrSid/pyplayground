@@ -18,7 +18,14 @@ const PythonPlayground = () => {
     setIsRunning(true);
 
     Sk.configure({
-      output: (text) => setOutput(prevOutput => prevOutput + text),
+      output: (text) => {
+        // To handle the \r properly, we clear the output before updating it
+        if (text.includes('\r')) {
+          setOutput(text.replace('\r', ''));
+        } else {
+          setOutput(prevOutput => prevOutput + text);
+        }
+      },
       read: (filename) => {
         if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][filename] === undefined) {
           throw "File not found: '" + filename + "'";
