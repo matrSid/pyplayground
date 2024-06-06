@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from './firebase';
 
 const FileManager = ({ onSelectFile, onNewFile }) => {
   const [files, setFiles] = useState([]);
   const [filename, setFilename] = useState('');
-
-  const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     fetchFiles();
   }, []);
 
   const fetchFiles = async () => {
-    const response = await axios.get(`${API_URL}/files`);
-    setFiles(response.data);
+    const querySnapshot = await getDocs(collection(db, 'files'));
+    const filesList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setFiles(filesList);
   };
 
   const createFile = async () => {
-    const response = await axios.post(`${API_URL}/files`, { filename, content: '' });
-    setFiles([...files, response.data]);
+    const newFile = { filename, content: '' };
+    const docRef = await addDoc(collection(db, 'files'), newFile);
+    setFiles([...files, { id: docRef.id, ...newFile }]);
     setFilename('');
   };
 
   const deleteFile = async (id) => {
-    await axios.delete(`${API_URL}/files/${id}`);
+    await deleteDoc(doc(db, 'files', id));
     fetchFiles();
   };
 
@@ -39,9 +40,9 @@ const FileManager = ({ onSelectFile, onNewFile }) => {
       <button onClick={createFile}>Create</button>
       <ul>
         {files.map((file) => (
-          <li key={file._id}>
+          <li key={file.id}>
             <span onClick={() => onSelectFile(file)}>{file.filename}</span>
-            <button onClick={() => deleteFile(file._id)}>Delete</button>
+            <button onClick={() => deleteFile(file.id)}>Delete</button>
           </li>
         ))}
       </ul>

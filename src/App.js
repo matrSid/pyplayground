@@ -5,7 +5,8 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import Sk from 'skulpt';
 import SplitPane from 'react-split-pane';
 import { SketchPicker } from 'react-color';
-import axios from 'axios';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import './App.css';
 import FileManager from './FileManager';
 
@@ -18,8 +19,6 @@ const PythonPlayground = () => {
   const [currentFile, setCurrentFile] = useState(null);
   const outputRef = useRef(null);
   const fileInputRef = useRef(null);
-
-  const API_URL = process.env.REACT_APP_API_URL;
 
   const clearOutput = () => {
     setOutput('');
@@ -101,13 +100,14 @@ const PythonPlayground = () => {
 
   const saveCurrentFile = async () => {
     if (currentFile) {
-      await axios.put(`${API_URL}/files/${currentFile._id}`, { content: pythonCode });
+      await updateDoc(doc(db, 'files', currentFile.id), { content: pythonCode });
       alert('File saved successfully!');
     } else {
       const filename = prompt('Enter filename:');
       if (filename) {
-        const response = await axios.post(`${API_URL}/files`, { filename, content: pythonCode });
-        setCurrentFile(response.data);
+        const newFile = { filename, content: pythonCode };
+        const docRef = await addDoc(collection(db, 'files'), newFile);
+        setCurrentFile({ id: docRef.id, ...newFile });
         alert('File saved successfully!');
       }
     }
