@@ -3,7 +3,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools';
-import Sk from 'skulpt/dist/skulpt.min';
+import Sk from 'skulpt';
 import SplitPane from 'react-split-pane';
 import { SketchPicker } from 'react-color';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
