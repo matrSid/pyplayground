@@ -23,19 +23,5 @@ module.exports = {
         return webpackConfig;
       },
     },
-    devServer: {
-      setupMiddlewares: (middlewares, devServer) => {
-        if (!devServer) {
-          throw new Error('webpack-dev-server is not defined');
-        }
-  
-        // Middleware setup
-        middlewares.unshift(evalSourceMapMiddleware(devServer));
-        middlewares.push(redirectServedPath(paths.publicUrlOrPath));
-        middlewares.push(noopServiceWorkerMiddleware(paths.publicUrlOrPath));
-  
-        return middlewares;
-      },
-    },
   };
   
