@@ -1,14 +1,19 @@
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const webpack = require('webpack');
+
 module.exports = {
-    webpack: {
-      configure: (webpackConfig) => {
-        // Add our own source-map-loader rule
+  webpack: {
+    configure: (webpackConfig, { env }) => {
+      if (env === 'development') {
+        webpackConfig.plugins.push(new ReactRefreshWebpackPlugin());
+
         webpackConfig.module.rules.push({
           test: /\.js$/,
           enforce: 'pre',
           use: ['source-map-loader'],
           exclude: [/node_modules\/skulpt/],
         });
-  
+
         // Filter out specific warnings
         webpackConfig.plugins.push({
           apply: (compiler) => {
@@ -19,9 +24,9 @@ module.exports = {
             });
           }
         });
-  
-        return webpackConfig;
-      },
+      }
+
+      return webpackConfig;
     },
-  };
-  
+  },
+};
