@@ -8,9 +8,8 @@ body {
 .container {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  height: calc(100vh - 40px); /* Adjust height to account for footer */
-  overflow: hidden; /* Prevent overflow due to fixed footer */
+  height: 100vh; /* Full height without footer */
+  overflow: hidden; /* Prevent overflow */
   position: relative; /* To position the HTML Playground button */
 }
 
@@ -18,6 +17,9 @@ body {
   flex: 1;
   padding: 10px;
   background-color: #272822; /* Background color for the editor container */
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 40px); /* Adjust to leave space for buttons */
 }
 
 .output-container {
@@ -27,14 +29,16 @@ body {
   color: #F8F8F2; /* Text color for the output */
   border-left: 1px solid #ccc;
   overflow-y: auto; /* Scroll if the content overflows */
+  height: 100%; /* Ensure it takes full height */
 }
 
 .python-editor {
-  height: 300px;
+  height: calc(100% - 50px); /* Ensure the editor takes full height minus space for buttons */
   background-color: #272822; /* Background color for the AceEditor */
   color: #F8F8F2; /* Text color for the AceEditor */
-  font-family: 'Fira Code', monospace; /* Font family for the AceEditor */
+  font-family: 'Fira Code, monospace'; /* Font family for the AceEditor */
   border: 1px solid #ccc;
+  flex: 1;
 }
 
 .run-button,
@@ -67,34 +71,29 @@ body {
   background-color: #c9302c; /* Slightly darker red on hover */
 }
 
+.color-picker-button{
+  background-color: #2965f1;
+  color: white; /* Button text color */
+  border: none; /* Remove default border */
+  padding: 10px 20px; /* Padding for the button */
+  border-radius: 20px; /* Smooth curves */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Font size */
+  font-family: 'Fira Code', monospace; /* Font family */
+  margin-right: 10px; /* Space between buttons */
+}
+
 pre {
   white-space: pre-wrap; /* This makes the text wrap within the pre element */
   word-wrap: break-word; /* This ensures that long words break to fit within the pre element */
   background-color: #1E1E1E; /* Background color for the pre element */
-  color: #F8F8F2; /* Text color for the pre element */
   padding: 10px;
   border-radius: 5px;
 }
 
-.footer {
-  background-color: #272822;
-  color: #F8F8F2;
-  text-align: center;
-  padding: 10px 0;
-  position: fixed;
-  width: 100%;
-  bottom: 0;
-}
-
-.footer p {
-  margin: 0;
-  font-size: 14px;
-  font-family: 'Fira Code', monospace;
-}
-
 .html-playground-button {
   position: fixed;
-  bottom: 60px; /* Above the footer */
+  bottom: 20px; /* Adjust position as needed */
   right: 20px;
   background-color: #3d994c;
   color: white;
@@ -109,4 +108,48 @@ pre {
 
 .html-playground-button:hover {
   background-color: #358c3f; /* Slightly darker green on hover */
+}
+
+/* Style for the resizer */
+.SplitPane .Resizer {
+  background: #000; /* Resizer background color */
+  opacity: .2; /* Resizer opacity */
+  z-index: 1; /* Make sure it's above other elements */
+  box-sizing: border-box; /* Box-sizing border-box for better control */
+  background-clip: padding-box; /* Background clip padding-box */
+}
+
+.SplitPane .Resizer:hover {
+  transition: all 2s ease;
+}
+
+.SplitPane .Resizer.horizontal {
+  height: 11px;
+  margin: -5px 0;
+  border-top: 5px solid rgba(255, 255, 255, 0);
+  border-bottom: 5px solid rgba(255, 255, 255, 0);
+  cursor: row-resize;
+  width: 100%;
+}
+
+.SplitPane .Resizer.vertical {
+  width: 11px;
+  margin: 0 -5px;
+  border-left: 5px solid rgba(255, 255, 255, 0);
+  border-right: 5px solid rgba(255, 255, 255, 0);
+  cursor: col-resize;
+}
+
+.SplitPane .Resizer.disabled {
+  cursor: not-allowed;
+}
+
+.SplitPane .Resizer:hover {
+  border-color: rgba(255, 255, 255, .5);
+}
+
+/* Style for the color picker */
+.color-picker {
+  position: flex;
+  z-index: 2;
 }

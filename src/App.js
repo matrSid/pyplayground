@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-monokai';
 import Sk from 'skulpt';
+import SplitPane from 'react-split-pane';
+import { SketchPicker } from 'react-color';
 import './App.css';
 
 const PythonPlayground = () => {
   const [pythonCode, setPythonCode] = useState('');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [outputTextColor, setOutputTextColor] = useState('#8FBC8F'); // Default light green color
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const outputRef = useRef(null);
 
   const clearOutput = () => {
     setOutput('');
@@ -19,7 +24,6 @@ const PythonPlayground = () => {
 
     Sk.configure({
       output: (text) => {
-        // To handle the \r properly, we clear the output before updating it
         if (text.includes('\r')) {
           setOutput(text.replace('\r', ''));
         } else {
@@ -69,39 +73,58 @@ const PythonPlayground = () => {
     });
   };
 
+  useEffect(() => {
+    if (outputRef.current) {
+      outputRef.current.scrollTop = outputRef.current.scrollHeight;
+    }
+  }, [output]);
+
   return (
     <div className="container">
-      <div className="editor-container">
-        <h2>Python Playground</h2>
-        <AceEditor
-          mode="python"
-          theme="monokai"
-          value={pythonCode}
-          onChange={setPythonCode}
-          fontSize={14}
-          width="100%"
-          height="300px"
-          className="python-editor"
-          editorProps={{
-            $blockScrolling: true,
-          }}
-          setOptions={{
-            enableBasicAutocompletion: true,
-            enableLiveAutocompletion: true,
-            fontFamily: 'Fira Code, monospace'
-          }}
-        />
-        <br />
-        <button className="run-button" onClick={executePythonCode} disabled={isRunning}>Run</button>
-        <button className="clear-button" onClick={clearOutput}>Clear Console</button>
-      </div>
-      <div className="output-container">
-        <h3>Output:</h3>
-        <pre>{output}</pre>
-      </div>
-      <footer className="footer">
-        <p>&copy; MADE BY SID, DO NOT DISTRIBUTE</p>
-      </footer>
+      <SplitPane split="vertical" minSize={200} defaultSize="50%">
+        <div className="editor-container">
+          <h2>Python Playground</h2>
+          <AceEditor
+            mode="python"
+            theme="monokai"
+            value={pythonCode}
+            onChange={setPythonCode}
+            fontSize={14}
+            width="100%"
+            height="300px"
+            className="python-editor"
+            editorProps={{
+              $blockScrolling: true,
+            }}
+            setOptions={{
+              enableBasicAutocompletion: true,
+              enableLiveAutocompletion: true,
+              fontFamily: 'Fira Code, monospace',
+              printMargin: false // Disable the print margin
+            }}
+          />
+          <br />
+          <div>
+            <button className="run-button" onClick={executePythonCode} disabled={isRunning}>Run</button>
+            <button className="clear-button" onClick={clearOutput}>Clear Console</button>
+            <button className="color-picker-button" onClick={() => setShowColorPicker(!showColorPicker)}>
+              {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
+            </button>
+          </div>
+          {showColorPicker && (
+            <div className="color-picker">
+              <SketchPicker
+                color={outputTextColor}
+                onChangeComplete={color => setOutputTextColor(color.hex)}
+              />
+            </div>
+          )}
+        </div>
+        <div className="output-container" ref={outputRef} style={{ color: outputTextColor }}>
+          <h3>Output:</h3>
+          <pre>{output}</pre>
+        </div>
+      </SplitPane>
       <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
     </div>
   );
