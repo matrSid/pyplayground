@@ -5,10 +5,9 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import Sk from 'skulpt';
 import SplitPane from 'react-split-pane';
 import { SketchPicker } from 'react-color';
-import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import './App.css';
-import FileManager from './FileManager';
 
 const PythonPlayground = () => {
   const [pythonCode, setPythonCode] = useState('');
@@ -17,8 +16,32 @@ const PythonPlayground = () => {
   const [outputTextColor, setOutputTextColor] = useState('#8FBC8F'); // Default light green color
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [filename, setFilename] = useState('');
   const outputRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
+  const fetchFiles = async () => {
+    const querySnapshot = await getDocs(collection(db, 'files'));
+    const filesList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setFiles(filesList);
+  };
+
+  const createFile = async () => {
+    const newFile = { filename, content: '' };
+    const docRef = await addDoc(collection(db, 'files'), newFile);
+    setFiles([...files, { id: docRef.id, ...newFile }]);
+    setFilename('');
+  };
+
+  const deleteFile = async (id) => {
+    await deleteDoc(doc(db, 'files', id));
+    fetchFiles();
+  };
 
   const clearOutput = () => {
     setOutput('');
@@ -129,7 +152,24 @@ const PythonPlayground = () => {
       <SplitPane split="vertical" minSize={200} defaultSize="50%">
         <div className="editor-container">
           <h2>Python Playground</h2>
-          <FileManager onSelectFile={handleSelectFile} onNewFile={() => setCurrentFile(null)} />
+          <div>
+            <h3>Files</h3>
+            <input
+              type="text"
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              placeholder="New file name"
+            />
+            <button onClick={createFile}>Create</button>
+            <ul>
+              {files.map((file) => (
+                <li key={file.id}>
+                  <span onClick={() => handleSelectFile(file)}>{file.filename}</span>
+                  <button onClick={() => deleteFile(file.id)}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          </div>
           <AceEditor
             mode="python"
             theme="monokai"
