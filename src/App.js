@@ -172,6 +172,7 @@ const PythonPlayground = () => {
                 color={outputTextColor}
                 onChangeComplete={color => setOutputTextColor(color.hex)}
               />
+            </div>
           )}
           <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
         </div>
