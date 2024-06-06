@@ -19,6 +19,8 @@ const PythonPlayground = () => {
   const outputRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  const API_URL = process.env.REACT_APP_API_URL;
+
   const clearOutput = () => {
     setOutput('');
   };
@@ -99,12 +101,12 @@ const PythonPlayground = () => {
 
   const saveCurrentFile = async () => {
     if (currentFile) {
-      await axios.put(`http://localhost:5000/files/${currentFile._id}`, { content: pythonCode });
+      await axios.put(`${API_URL}/files/${currentFile._id}`, { content: pythonCode });
       alert('File saved successfully!');
     } else {
       const filename = prompt('Enter filename:');
       if (filename) {
-        const response = await axios.post('http://localhost:5000/files', { filename, content: pythonCode });
+        const response = await axios.post(`${API_URL}/files`, { filename, content: pythonCode });
         setCurrentFile(response.data);
         alert('File saved successfully!');
       }

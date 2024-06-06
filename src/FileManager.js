@@ -5,23 +5,25 @@ const FileManager = ({ onSelectFile, onNewFile }) => {
   const [files, setFiles] = useState([]);
   const [filename, setFilename] = useState('');
 
+  const API_URL = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     fetchFiles();
   }, []);
 
   const fetchFiles = async () => {
-    const response = await axios.get('http://localhost:5000/files');
+    const response = await axios.get(`${API_URL}/files`);
     setFiles(response.data);
   };
 
   const createFile = async () => {
-    const response = await axios.post('http://localhost:5000/files', { filename, content: '' });
+    const response = await axios.post(`${API_URL}/files`, { filename, content: '' });
     setFiles([...files, response.data]);
     setFilename('');
   };
 
   const deleteFile = async (id) => {
-    await axios.delete(`http://localhost:5000/files/${id}`);
+    await axios.delete(`${API_URL}/files/${id}`);
     fetchFiles();
   };
 
