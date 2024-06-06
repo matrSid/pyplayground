@@ -3,7 +3,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools';
-import Sk from 'skulpt/dist/skulpt.min';
+import Sk from 'skulpt';
 import SplitPane from 'react-split-pane';
 import { SketchPicker } from 'react-color';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
@@ -61,7 +61,7 @@ const PythonPlayground = () => {
       },
       read: (filename) => {
         if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][filename] === undefined) {
-          throw new Error("File not found: '" + filename + "'");
+          throw "File not found: '" + filename + "'";
         }
         return Sk.builtinFiles["files"][filename];
       },
@@ -100,6 +100,15 @@ const PythonPlayground = () => {
       console.error("Error executing Python code:", err.toString());
       setIsRunning(false);
     });
+  };
+
+  const downloadFile = () => {
+    const element = document.createElement("a");
+    const file = new Blob([pythonCode], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = "script.py";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
   };
 
   const handleFileUpload = (event) => {
