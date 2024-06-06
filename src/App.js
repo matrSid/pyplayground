@@ -5,7 +5,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import Sk from 'skulpt';
 import SplitPane from 'react-split-pane';
 import { SketchPicker } from 'react-color';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { db } from './firebase';
 import './App.css';
 import FileManager from './FileManager';
@@ -172,7 +172,6 @@ const PythonPlayground = () => {
                 color={outputTextColor}
                 onChangeComplete={color => setOutputTextColor(color.hex)}
               />
-            </div>
           )}
           <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
         </div>
