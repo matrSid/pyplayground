@@ -19,7 +19,8 @@ body {
   background-color: #272822; /* Background color for the editor container */
   display: flex;
   flex-direction: column;
-  height: calc(100% - 40px); /* Adjust to leave space for buttons */
+  height: calc(100% - 50px); /* Adjust to leave space for buttons */
+  position: relative; /* Add relative positioning */
 }
 
 .output-container {
@@ -33,7 +34,7 @@ body {
 }
 
 .python-editor {
-  height: calc(100% - 50px); /* Ensure the editor takes full height minus space for buttons */
+  height: calc(100% - 70px); /* Ensure the editor takes full height minus space for buttons */
   background-color: #272822; /* Background color for the AceEditor */
   color: #F8F8F2; /* Text color for the AceEditor */
   font-family: 'Fira Code, monospace'; /* Font family for the AceEditor */
@@ -42,7 +43,10 @@ body {
 }
 
 .run-button,
-.clear-button {
+.clear-button,
+.color-picker-button,
+.save-button,
+.load-button {
   background-color: #3d994c; /* Button background color */
   color: white; /* Button text color */
   border: none; /* Remove default border */
@@ -58,6 +62,10 @@ body {
   background-color: #d9534f; /* Red background color for clear button */
 }
 
+.color-picker-button {
+  background-color: #2965f1;
+}
+
 .run-button:disabled {
   background-color: #808080; /* Grey background color for disabled buttons */
   cursor: not-allowed; /* Not-allowed cursor for disabled buttons */
@@ -71,16 +79,16 @@ body {
   background-color: #c9302c; /* Slightly darker red on hover */
 }
 
-.color-picker-button{
-  background-color: #2965f1;
-  color: white; /* Button text color */
-  border: none; /* Remove default border */
-  padding: 10px 20px; /* Padding for the button */
-  border-radius: 20px; /* Smooth curves */
-  cursor: pointer; /* Pointer cursor on hover */
-  font-size: 16px; /* Font size */
-  font-family: 'Fira Code', monospace; /* Font family */
-  margin-right: 10px; /* Space between buttons */
+.color-picker-button:hover {
+  background-color: #1f50b5; /* Slightly darker blue on hover */
+}
+
+.save-button:hover {
+  background-color: #358c3f; /* Slightly darker green on hover */
+}
+
+.load-button:hover {
+  background-color: #358c3f; /* Slightly darker green on hover */
 }
 
 pre {
@@ -92,9 +100,9 @@ pre {
 }
 
 .html-playground-button {
-  position: fixed;
-  bottom: 20px; /* Adjust position as needed */
-  right: 20px;
+  position: absolute; /* Change from fixed to absolute */
+  bottom: 10px; /* Adjust position as needed */
+  right: 10px; /* Adjust position as needed */
   background-color: #3d994c;
   color: white;
   border: none;

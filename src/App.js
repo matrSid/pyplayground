@@ -5,7 +5,9 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import Sk from 'skulpt';
 import SplitPane from 'react-split-pane';
 import { SketchPicker } from 'react-color';
+import axios from 'axios';
 import './App.css';
+import FileManager from './FileManager';
 
 const PythonPlayground = () => {
   const [pythonCode, setPythonCode] = useState('');
@@ -13,7 +15,9 @@ const PythonPlayground = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [outputTextColor, setOutputTextColor] = useState('#8FBC8F'); // Default light green color
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [currentFile, setCurrentFile] = useState(null);
   const outputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const clearOutput = () => {
     setOutput('');
@@ -73,6 +77,45 @@ const PythonPlayground = () => {
     });
   };
 
+  const downloadFile = () => {
+    const element = document.createElement("a");
+    const file = new Blob([pythonCode], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = "script.py";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPythonCode(e.target.result);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const saveCurrentFile = async () => {
+    if (currentFile) {
+      await axios.put(`http://localhost:5000/files/${currentFile._id}`, { content: pythonCode });
+      alert('File saved successfully!');
+    } else {
+      const filename = prompt('Enter filename:');
+      if (filename) {
+        const response = await axios.post('http://localhost:5000/files', { filename, content: pythonCode });
+        setCurrentFile(response.data);
+        alert('File saved successfully!');
+      }
+    }
+  };
+
+  const handleSelectFile = (file) => {
+    setCurrentFile(file);
+    setPythonCode(file.content);
+  };
+
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
@@ -84,6 +127,7 @@ const PythonPlayground = () => {
       <SplitPane split="vertical" minSize={200} defaultSize="50%">
         <div className="editor-container">
           <h2>Python Playground</h2>
+          <FileManager onSelectFile={handleSelectFile} onNewFile={() => setCurrentFile(null)} />
           <AceEditor
             mode="python"
             theme="monokai"
@@ -110,6 +154,15 @@ const PythonPlayground = () => {
             <button className="color-picker-button" onClick={() => setShowColorPicker(!showColorPicker)}>
               {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
             </button>
+            <button className="save-button" onClick={saveCurrentFile}>Save</button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileUpload}
+              accept=".py"
+            />
+            <button className="load-button" onClick={() => fileInputRef.current.click()}>Load</button>
           </div>
           {showColorPicker && (
             <div className="color-picker">
@@ -119,13 +172,13 @@ const PythonPlayground = () => {
               />
             </div>
           )}
+          <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
         </div>
         <div className="output-container" ref={outputRef} style={{ color: outputTextColor }}>
           <h3>Output:</h3>
           <pre>{output}</pre>
         </div>
       </SplitPane>
-      <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
     </div>
   );
 };
