@@ -14,11 +14,13 @@ const PythonPlayground = () => {
   const [pythonCode, setPythonCode] = useState('');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
-  const [outputTextColor, setOutputTextColor] = useState('#8FBC8F'); // Default light green color
+  const [outputTextColor, setOutputTextColor] = useState(localStorage.getItem('outputTextColor') || '#8FBC8F');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
   const [files, setFiles] = useState([]);
   const [filename, setFilename] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar visibility
+  const [showFiles, setShowFiles] = useState(false); // State for showing files
   const outputRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -133,6 +135,15 @@ const PythonPlayground = () => {
     setPythonCode(file.content);
   };
 
+  const handleColorChangeComplete = (color) => {
+    setOutputTextColor(color.hex);
+    localStorage.setItem('outputTextColor', color.hex);
+  };
+
+  const toggleShowFiles = () => {
+    setShowFiles(!showFiles);
+  };
+
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
@@ -141,27 +152,50 @@ const PythonPlayground = () => {
 
   return (
     <div className="container">
+      <button className="hamburger-button" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+        ☰
+      </button>
+      <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <h2>chillenz Playground</h2>
+        <div className="file-controls">
+          <input
+            type="text"
+            value={filename}
+            onChange={(e) => setFilename(e.target.value)}
+            placeholder="New file name"
+            className="file-input"
+          />
+          <button className="create-button" onClick={createFile}>Create</button>
+          <button className="show-files-button" onClick={toggleShowFiles}>
+            {showFiles ? 'Hide Files' : 'Show Files'}
+          </button>
+        </div>
+        {showFiles && (
+          <ul>
+            {files.map((file) => (
+              <li key={file.id} className={currentFile && currentFile.id === file.id ? 'selected' : ''}>
+                <span>{file.filename}</span>
+                <div className="file-buttons">
+                  <button onClick={() => handleSelectFile(file)}>Open</button>
+                  <button className="delete-button" onClick={() => deleteFile(file.id)}>Delete</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button className="save-button" onClick={saveCurrentFile}>Save</button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileUpload}
+          accept=".py"
+        />
+        <button className="load-button" onClick={() => fileInputRef.current.click()}>Load</button>
+      </div>
       <SplitPane split="vertical" minSize={200} defaultSize="50%">
         <div className="editor-container">
-          <h2>Python Playground</h2>
-          <div>
-            <h3>Files</h3>
-            <input
-              type="text"
-              value={filename}
-              onChange={(e) => setFilename(e.target.value)}
-              placeholder="New file name"
-            />
-            <button onClick={createFile}>Create</button>
-            <ul>
-              {files.map((file) => (
-                <li key={file.id}>
-                  <span onClick={() => handleSelectFile(file)}>{file.filename}</span>
-                  <button onClick={() => deleteFile(file.id)}>Delete</button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <h2 className="playground-heading">chillenz Playground</h2>
           <AceEditor
             mode="python"
             theme="monokai"
@@ -188,21 +222,12 @@ const PythonPlayground = () => {
             <button className="color-picker-button" onClick={() => setShowColorPicker(!showColorPicker)}>
               {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
             </button>
-            <button className="save-button" onClick={saveCurrentFile}>Save</button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              onChange={handleFileUpload}
-              accept=".py"
-            />
-            <button className="load-button" onClick={() => fileInputRef.current.click()}>Load</button>
           </div>
           {showColorPicker && (
             <div className="color-picker">
               <SketchPicker
                 color={outputTextColor}
-                onChangeComplete={color => setOutputTextColor(color.hex)}
+                onChangeComplete={handleColorChangeComplete}
               />
             </div>
           )}
