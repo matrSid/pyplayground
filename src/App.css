@@ -97,6 +97,16 @@ body {
   background-color: #c9302c; /* Darker red on hover */
 }
 
+.files-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out;
+}
+
+.files-container.show {
+  max-height: 500px; /* Adjust according to your content height */
+}
+
 .sidebar ul {
   list-style-type: none; /* No list style */
   padding: 0; /* No padding */
@@ -244,7 +254,7 @@ pre {
   position: absolute; /* Change from fixed to absolute */
   bottom: 10px; /* Adjust position as needed */
   right: 10px; /* Adjust position as needed */
-  background-color: #e34c26; /* Orange background color */
+  background-color: #f39c12; /* Orange background color */
   color: white;
   border: none;
   padding: 10px 20px;
@@ -256,7 +266,7 @@ pre {
 }
 
 .html-playground-button:hover {
-  background-color: #c04422; /* Slightly darker orange on hover */
+  background-color: #e67e22; /* Slightly darker orange on hover */
 }
 
 /* Style for the resizer */

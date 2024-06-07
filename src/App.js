@@ -170,7 +170,7 @@ const PythonPlayground = () => {
             {showFiles ? 'Hide Files' : 'Show Files'}
           </button>
         </div>
-        {showFiles && (
+        <div className={`files-container ${showFiles ? 'show' : ''}`}>
           <ul>
             {files.map((file) => (
               <li key={file.id} className={currentFile && currentFile.id === file.id ? 'selected' : ''}>
@@ -182,7 +182,7 @@ const PythonPlayground = () => {
               </li>
             ))}
           </ul>
-        )}
+        </div>
         <button className="save-button" onClick={saveCurrentFile}>Save</button>
         <input
           type="file"
