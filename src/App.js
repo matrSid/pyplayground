@@ -21,8 +21,10 @@ const PythonPlayground = () => {
   const [filename, setFilename] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar visibility
   const [showFiles, setShowFiles] = useState(false); // State for showing files
+  const [inputPrompt, setInputPrompt] = useState(null);
   const outputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const inputFieldRef = useRef(null);
 
   useEffect(() => {
     fetchFiles();
@@ -52,13 +54,13 @@ const PythonPlayground = () => {
 
   const executePythonCode = () => {
     setIsRunning(true);
+    setOutput('');
 
     Sk.configure({
       output: (text) => {
-        if (text.includes('\r')) {
-          setOutput(text.replace('\r', ''));
-        } else {
-          setOutput(prevOutput => prevOutput + text);
+        setOutput(prevOutput => prevOutput + text);
+        if (outputRef.current) {
+          outputRef.current.scrollTop = outputRef.current.scrollHeight;
         }
       },
       read: (filename) => {
@@ -69,8 +71,13 @@ const PythonPlayground = () => {
       },
       execLimit: null,
       yieldLimit: 100,
-      inputfun: (prompt) => window.prompt(prompt),
-      inputfunTakesPrompt: true
+      inputfunTakesPrompt: true,
+      inputfun: (prompt) => {
+        return new Promise((resolve) => {
+          setOutput(prevOutput => prevOutput + prompt + '\n');
+          setInputPrompt({ prompt, resolve });
+        });
+      }
     });
 
     // Custom sleep function
@@ -144,6 +151,16 @@ const PythonPlayground = () => {
     setShowFiles(!showFiles);
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && inputPrompt) {
+      const input = inputFieldRef.current.value;
+      setOutput(prevOutput => prevOutput + input + '\n');
+      inputPrompt.resolve(input + '\n');
+      setInputPrompt(null);
+      inputFieldRef.current.value = '';
+    }
+  };
+
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
@@ -151,7 +168,7 @@ const PythonPlayground = () => {
   }, [output]);
 
   return (
-    <div className="container">
+    <div className="container" onKeyPress={handleKeyPress}>
       <button className="hamburger-button" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
         ☰
       </button>
@@ -236,6 +253,14 @@ const PythonPlayground = () => {
         <div className="output-container" ref={outputRef} style={{ color: outputTextColor }}>
           <h3>Output:</h3>
           <pre>{output}</pre>
+          {inputPrompt && (
+            <input
+              type="text"
+              className="input-field"
+              ref={inputFieldRef}
+              autoFocus
+            />
+          )}
         </div>
       </SplitPane>
     </div>
