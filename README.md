@@ -4,10 +4,14 @@
 And I regret it, dont be like me and use nextjs.
 
 ## Cloning the repo
-```git clone https://github.com/matrSid/pyplayground.git```
+```
+git clone https://github.com/matrSid/pyplayground.git
+cd pyplayground
+```
 
 # Building
 ```
+
 yarn install
 yarn start
 ```
