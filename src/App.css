@@ -34,9 +34,11 @@ body {
   width: 0; /* Initial width */
   background-color: #2C2C2C; /* Sidebar background color */
   overflow-x: hidden; /* Hide horizontal overflow */
-  transition: 0.2s; /* Smooth transition */
-  padding-top: 60px; /* Padding top */
+  overflow-y: auto; /* Enable vertical scrolling */
+  transition: width 0.2s; /* Smooth transition */
   z-index: 999; /* High z-index */
+  display: flex; /* Make sidebar a flex container */
+  flex-direction: column; /* Align children vertically */
 }
 
 .sidebar.open {
@@ -52,6 +54,7 @@ body {
   display: flex;
   flex-direction: column;
   padding: 0 20px;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .file-controls .file-input {
@@ -65,20 +68,9 @@ body {
   width: 95%;
 }
 
-.file-controls .create-button {
-  background-color: #3d994c; /* Green background color for create button */
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 16px;
-  font-family: 'Fira Code', monospace;
-  margin-bottom: 10px;
-}
-
+.file-controls .create-button,
 .file-controls .show-files-button {
-  background-color: #d9534f; /* Red background color for show files button */
+  background-color: #3d994c;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -90,66 +82,76 @@ body {
 }
 
 .file-controls .create-button:hover {
-  background-color: #358c3f; /* Darker green on hover */
+  background-color: #358c3f;
+}
+
+.file-controls .show-files-button {
+  background-color: #3d3d3d;
 }
 
 .file-controls .show-files-button:hover {
-  background-color: #c9302c; /* Darker red on hover */
+  background-color: #4d4d4d;
 }
 
 .files-container {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.5s ease-in-out;
+  transition: max-height 0.3s ease;
+  overflow-y: auto;
 }
 
-.files-container.show {
-  max-height: 500px; /* Adjust according to your content height */
+.files-container.open {
+  max-height: 300px;
+}
+
+
+.files-container.closed {
+  max-height: 0; /* Height when collapsed */
 }
 
 .sidebar ul {
-  list-style-type: none; /* No list style */
-  padding: 0; /* No padding */
+  list-style-type: none;
+  padding: 0;
 }
 
 .sidebar ul li {
-  padding: 8px 20px; /* Padding */
-  text-decoration: none; /* No text decoration */
-  color: #F8F8F2; /* Text color */
-  display: block; /* Block display */
-  border-bottom: 1px solid #444; /* Dark line between files */
+  padding: 8px 20px;
+  text-decoration: none;
+  color: #F8F8F2;
+  display: block;
+  border-bottom: 1px solid #444;
 }
 
 .sidebar ul li.selected {
-  background-color: #1c1c1c80; /* Darker background for selected file */
+  background-color: #1c1c1c80;
 }
 
 .sidebar ul li .file-buttons {
   display: flex;
   justify-content: flex-start;
-  gap: 10px; /* Space between buttons */
-  margin-top: 5px; /* Space above the buttons */
+  gap: 10px;
+  margin-top: 5px;
 }
 
 .sidebar ul li button {
-  background-color: #3d994c; /* Default button background color */
-  border: none; /* No border */
-  color: white; /* Text color */
-  padding: 5px 10px; /* Padding */
-  border-radius: 10px; /* Rounded corners */
-  cursor: pointer; /* Pointer cursor */
+  background-color: #3d994c;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 .sidebar ul li button:hover {
-  background-color: #358c3f; /* Darker green on hover */
+  background-color: #358c3f;
 }
 
 .sidebar ul li .delete-button {
-  background-color: #d9534f; /* Red background color for delete button */
+  background-color: #d9534f;
 }
 
 .sidebar ul li .delete-button:hover {
-  background-color: #c9302c; /* Darker red on hover */
+  background-color: #c9302c;
 }
 
 .save-button,
@@ -163,6 +165,7 @@ body {
   font-size: 16px;
   font-family: 'Fira Code', monospace;
   margin: 10px 20px;
+  flex-shrink: 0;
 }
 
 .save-button:hover,
@@ -172,89 +175,87 @@ body {
 
 .editor-container {
   flex: 1;
-  padding: 10px;
-  background-color: #272822; /* Background color for the editor container */
   display: flex;
   flex-direction: column;
-  height: calc(100% - 50px); /* Adjust to leave space for buttons */
-  position: relative; /* Add relative positioning */
+  height: 100%;
+  position: relative;
 }
 
 .playground-heading {
-  padding-left: 60px; /* Shift heading to the right */
+  padding-left: 60px;
 }
 
 .output-container {
   flex: 1;
   padding: 10px;
-  background-color: #1E1E1E; /* Slightly different background for output */
-  color: #F8F8F2; /* Text color for the output */
+  background-color: #1E1E1E;
+  color: #F8F8F2;
   border-left: 1px solid #ccc;
-  overflow-y: auto; /* Scroll if the content overflows */
-  height: 100%; /* Ensure it takes full height */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .python-editor {
-  height: calc(100% - 70px); /* Ensure the editor takes full height minus space for buttons */
-  background-color: #272822; /* Background color for the AceEditor */
-  color: #F8F8F2; /* Text color for the AceEditor */
-  font-family: 'Fira Code, monospace'; /* Font family for the AceEditor */
-  border: 1px solid #ccc;
   flex: 1;
+  background-color: #272822;
+  color: #F8F8F2;
+  font-family: 'Fira Code, monospace';
+  border: 1px solid #ccc;
 }
 
 .run-button,
 .clear-button,
 .color-picker-button {
-  background-color: #3d994c; /* Button background color */
-  color: white; /* Button text color */
-  border: none; /* Remove default border */
-  padding: 10px 20px; /* Padding for the button */
-  border-radius: 20px; /* Smooth curves */
-  cursor: pointer; /* Pointer cursor on hover */
-  font-size: 16px; /* Font size */
-  font-family: 'Fira Code', monospace; /* Font family */
-  margin-right: 10px; /* Space between buttons */
+  background-color: #3d994c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Fira Code', monospace;
+  margin-right: 10px;
 }
 
 .clear-button {
-  background-color: #d9534f; /* Red background color for clear button */
+  background-color: #d9534f;
 }
 
 .color-picker-button {
-  background-color: #2965f1;
+  background-color: #ab34eb;
 }
 
 .run-button:disabled {
-  background-color: #808080; /* Grey background color for disabled buttons */
-  cursor: not-allowed; /* Not-allowed cursor for disabled buttons */
+  background-color: #808080;
+  cursor: not-allowed;
 }
 
 .run-button:hover {
-  background-color: #358c3f; /* Slightly darker green on hover */
+  background-color: #358c3f;
 }
 
 .clear-button:hover {
-  background-color: #c9302c; /* Slightly darker red on hover */
+  background-color: #c9302c;
 }
 
 .color-picker-button:hover {
-  background-color: #1f50b5; /* Slightly darker blue on hover */
+  background-color: #8710c7;
 }
 
 pre {
-  white-space: pre-wrap; /* This makes the text wrap within the pre element */
-  word-wrap: break-word; /* This ensures that long words break to fit within the pre element */
-  background-color: #1E1E1E; /* Background color for the pre element */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #1E1E1E;
   padding: 10px;
   border-radius: 5px;
 }
 
 .html-playground-button {
-  position: absolute; /* Change from fixed to absolute */
-  bottom: 10px; /* Adjust position as needed */
-  right: 10px; /* Adjust position as needed */
-  background-color: #f39c12; /* Orange background color */
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: #f16528;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -266,19 +267,18 @@ pre {
 }
 
 .html-playground-button:hover {
-  background-color: #e67e22; /* Slightly darker orange on hover */
+  background-color: #e85313;
 }
 
-/* Style for the resizer */
 .SplitPane .Resizer {
-  background: #000; /* Resizer background color */
-  opacity: .2; /* Resizer opacity */
-  z-index: 1; /* Make sure it's above other elements */
-  box-sizing: border-box; /* Box-sizing border-box for better control */
-  background-clip: padding-box; /* Background clip padding-box */
+  background: #000;
+  opacity: .2;
+  z-index: 1;
+  box-sizing: border-box;
+  background-clip: padding-box;
 }
 
-.SplitPane .Resizer:hover {
+.SplitPane .Resizer {
   transition: all 2s ease;
 }
 
@@ -303,11 +303,10 @@ pre {
   cursor: not-allowed;
 }
 
-.SplitPane .Resizer:hover {
+.SplitPane .Resizer {
   border-color: rgba(255, 255, 255, .5);
 }
 
-/* Style for the color picker */
 .color-picker {
   position: flex;
   z-index: 2;
@@ -319,4 +318,37 @@ pre {
   border: none;
   outline: none;
   margin-top: auto;
+}
+
+.stop-button {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Fira Code', monospace;
+  margin-right: 10px;
+}
+
+.stop-button:hover {
+  background-color: #c9302c;
+}
+
+.stop-button:disabled {
+  background-color: #808080;
+  cursor: not-allowed;
+}
+
+.file-buttons .rename-button{
+  background-color: #2965f1;
+}
+
+.file-buttons .rename-button:hover{
+  background-color: #0e50eb;
+}
+
+.output-container.hide-cursor .xterm-cursor {
+  display: none;
 }
