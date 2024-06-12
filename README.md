@@ -11,7 +11,6 @@ cd pyplayground
 
 # Building
 ```
-
 yarn install
 yarn start
 ```
