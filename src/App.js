@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
-import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/theme-twilight';
+import 'ace-builds/src-noconflict/theme-xcode';
 import Sk from 'skulpt';
 import SplitPane from 'react-split-pane';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
@@ -29,6 +32,9 @@ const PythonPlayground = () => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [theme, setTheme] = useState(localStorage.getItem('editorTheme') || 'monokai');
+  const [fontSize, setFontSize] = useState(parseInt(localStorage.getItem('editorFontSize'), 10) || 14);
+  const [showSettings, setShowSettings] = useState(false);
   const terminalRef = useRef(null);
   const fileInputRef = useRef(null);
   const terminal = useRef(null);
@@ -59,6 +65,22 @@ const PythonPlayground = () => {
   useEffect(() => {
     localStorage.setItem('outputColor', outputColor);
   }, [outputColor]);
+
+  useEffect(() => {
+    const hasRefreshed = localStorage.getItem('hasRefreshed');
+    if (!hasRefreshed) {
+      localStorage.setItem('hasRefreshed', 'true');
+      window.location.reload();
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('editorTheme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('editorFontSize', fontSize);
+  }, [fontSize]);
 
   const initializeTerminal = () => {
     if (terminalRef.current && !terminal.current) {
@@ -262,6 +284,57 @@ const PythonPlayground = () => {
     colorPickerRef.current = element;
   };
 
+  const renderThemeSelector = () => (
+    <div className="theme-selector">
+      <h3>Select Theme</h3>
+      <label>
+        <input
+          type="radio"
+          value="monokai"
+          checked={theme === 'monokai'}
+          onChange={(e) => setTheme(e.target.value)}
+        />
+        Monokai
+      </label>
+      <label>
+        <input
+          type="radio"
+          value="github"
+          checked={theme === 'github'}
+          onChange={(e) => setTheme(e.target.value)}
+        />
+        Github
+      </label>
+      <label>
+        <input
+          type="radio"
+          value="twilight"
+          checked={theme === 'twilight'}
+          onChange={(e) => setTheme(e.target.value)}
+        />
+        Twilight
+      </label>
+      <label>
+        <input
+          type="radio"
+          value="xcode"
+          checked={theme === 'xcode'}
+          onChange={(e) => setTheme(e.target.value)}
+        />
+        Xcode
+      </label>
+    </div>
+  );
+
+  const renderFontSizeSelector = () => (
+    <div className="font-size-selector">
+      <h3>Font Size</h3>
+      <button onClick={() => setFontSize((size) => Math.max(size - 1, 10))}>-</button>
+      <span>{fontSize}</span>
+      <button onClick={() => setFontSize((size) => Math.min(size + 1, 30))}>+</button>
+    </div>
+  );
+
   return (
     <div className="container">
       <button className="hamburger-button" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
@@ -295,6 +368,7 @@ const PythonPlayground = () => {
               <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
             </>
           )}
+          <button className="settings-button" onClick={() => setShowSettings(true)}>Settings</button>
         </div>
         <div className={`files-container ${showFiles ? 'open' : ''}`}>
           <ul>
@@ -326,10 +400,10 @@ const PythonPlayground = () => {
             <h2 className="playground-heading">chillenz Playground</h2>
             <AceEditor
               mode="python"
-              theme="monokai"
+              theme={theme}
               value={pythonCode}
               onChange={setPythonCode}
-              fontSize={14}
+              fontSize={fontSize}
               width="100%"
               className="python-editor"
               editorProps={{
@@ -361,10 +435,10 @@ const PythonPlayground = () => {
             <h2 className="playground-heading">chillenz Playground</h2>
             <AceEditor
               mode="python"
-              theme="monokai"
+              theme={theme}
               value={pythonCode}
               onChange={setPythonCode}
-              fontSize={14}
+              fontSize={fontSize}
               width="100%"
               className="python-editor"
               editorProps={{
@@ -394,7 +468,7 @@ const PythonPlayground = () => {
               <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
             </div>
           </div>
-          <div className={`output-container ${isInputRunning ? '' : 'hide-cursor'}`} ref={terminalRef} style={{ height: '100%', overflowY: 'auto' }}>
+          <div className={`output-container ${isInputRunning ? '' : 'hide-cursor'}`} ref={terminalRef} style={{ height: '100%' }}>
           </div>
         </SplitPane>
       )}
@@ -404,6 +478,14 @@ const PythonPlayground = () => {
             color={`#${outputColor.toString(16)}`}
             onChangeComplete={handleColorChangeComplete}
           />
+        </div>
+      )}
+      {showSettings && (
+        <div className="settings-modal">
+          <h2>Settings</h2>
+          {renderThemeSelector()}
+          {renderFontSizeSelector()}
+          <button className="close-settings-button" onClick={() => setShowSettings(false)}>Close Settings</button>
         </div>
       )}
     </div>

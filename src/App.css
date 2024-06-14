@@ -161,8 +161,7 @@ body {
   background-color: #1C86EE;
 }
 
-.save-button,
-.load-button {
+.save-button {
   background-color: #2965f1;
   color: white;
   border: none;
@@ -172,7 +171,22 @@ body {
   font-size: 16px;
   font-family: 'Fira Code', monospace;
   margin: 10px 20px;
+  margin-top: 1;
   flex-shrink: 0;
+}
+
+.load-button{
+background-color: #2965f1;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 20px;
+cursor: pointer;
+font-size: 16px;
+font-family: 'Fira Code', monospace;
+margin: 10px 20px;
+margin-top: 0;
+flex-shrink: 0;
 }
 
 .save-button:hover,
@@ -201,7 +215,6 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Ensure it takes the full viewport height */
 }
 
 .python-editor {
@@ -368,6 +381,7 @@ pre {
 .output-container.hide-cursor .xterm-cursor {
   display: none;
 }
+
 .color-picker {
   position: flex;
   z-index: 1000;
@@ -430,4 +444,62 @@ pre {
   .color-picker-button, .html-playground-button {
     display: flex;
   }
+}
+
+/* Settings modal styles */
+.settings-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #2C2C2C;
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 1000;
+  color: #F8F8F2;
+}
+
+.settings-modal h2 {
+  margin-top: 0;
+}
+
+.theme-selector, .font-size-selector {
+  margin-bottom: 20px;
+}
+
+.theme-selector label, .font-size-selector button {
+  display: block;
+  margin: 10px 0;
+  font-size: 16px;
+  color: #F8F8F2;
+}
+
+.font-size-selector button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #3d994c;
+  color: white;
+  cursor: pointer;
+}
+
+.font-size-selector button:hover {
+  background-color: #358c3f;
+}
+
+/* Improved Settings and Close Settings button styles */
+.settings-button, .close-settings-button {
+  background-color: #3d3d3d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Fira Code', monospace;
+  margin-top: 0px;
+}
+
+.settings-button:hover, .close-settings-button:hover {
+  background-color: #4d4d4d;
 }
