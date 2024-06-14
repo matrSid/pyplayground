@@ -27,21 +27,38 @@ const PythonPlayground = () => {
     return savedColor ? parseInt(savedColor, 10) : 82; // Default to green if no saved color
   });
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showOutput, setShowOutput] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const terminalRef = useRef(null);
   const fileInputRef = useRef(null);
   const terminal = useRef(null);
   const fitAddon = useRef(null);
   const onKeyRef = useRef(null);
+  const colorPickerRef = useRef(null);
+  const colorPickerButtonRef = useRef(null);
   let input = ''; // Define input variable here
 
   useEffect(() => {
     fetchFiles();
     initializeTerminal();
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        setShowOutput(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
     localStorage.setItem('pythonCode', pythonCode);
   }, [pythonCode]);
+
+  useEffect(() => {
+    localStorage.setItem('outputColor', outputColor);
+  }, [outputColor]);
 
   const initializeTerminal = () => {
     if (terminalRef.current && !terminal.current) {
@@ -98,6 +115,7 @@ const PythonPlayground = () => {
       const colorCode = `\x1b[38;5;${color}m`; // ANSI escape code for 256 colors
       const resetCode = `\x1b[0m`;
       terminal.current.write(text.split('\n').map(line => colorCode + line + resetCode).join('\r\n'));
+      terminal.current.scrollToBottom(); // Ensure the terminal auto-scrolls to the bottom
     }
   };
 
@@ -127,6 +145,9 @@ const PythonPlayground = () => {
 
   const executePythonCode = () => {
     setIsRunning(true);
+    if (isMobile) {
+      setShowOutput(true);
+    }
 
     if (terminal.current) {
       terminal.current.clear();
@@ -135,8 +156,7 @@ const PythonPlayground = () => {
 
     Sk.configure({
       output: (text) => {
-        // Use the selected color for regular output and red for errors
-        const color = text.includes('Error:') ? 196 : outputColor; // Use color code 196 (red) for errors
+        const color = text.includes('Error:') ? 196 : outputColor;
         writeColoredText(text, color);
       },
       read: (filename) => {
@@ -148,23 +168,23 @@ const PythonPlayground = () => {
       yieldLimit: 10,
       inputfunTakesPrompt: true,
       inputfun: (prompt) => {
-        setIsInputRunning(true); // Set the state when input command starts
+        setIsInputRunning(true);
         return new Promise((resolve) => {
           if (terminal.current) {
-            writeColoredText(prompt, outputColor); // Use selected color for prompt
-            input = ''; // Reset input on new input command
+            writeColoredText(prompt, outputColor);
+            input = '';
             onKeyRef.current = terminal.current.onKey((key) => {
               const char = key.domEvent.key;
               if (char === 'Enter') {
                 terminal.current.write('\r\n');
-                setIsInputRunning(false); // Reset the state when input command ends
+                setIsInputRunning(false);
                 resolve(input);
                 onKeyRef.current.dispose();
               } else if (char === 'Backspace') {
                 input = input.slice(0, -1);
                 terminal.current.write('\b \b');
               } else {
-                terminal.current.write(`\x1b[38;5;${outputColor}m` + char + `\x1b[0m`); // Use selected color for input characters
+                terminal.current.write(`\x1b[38;5;${outputColor}m` + char + `\x1b[0m`);
                 input += char;
               }
             });
@@ -181,7 +201,7 @@ const PythonPlayground = () => {
       console.log("Python code executed successfully!");
       setIsRunning(false);
     }, (err) => {
-      writeColoredText(`\nError: ${err.toString()}`, 196); // Example: Using color code 196 (red)
+      writeColoredText(`\nError: ${err.toString()}`, 196);
       console.error("Error executing Python code:", err.toString());
       setIsRunning(false);
     });
@@ -228,7 +248,19 @@ const PythonPlayground = () => {
     setOutputColor(ansiColor);
     localStorage.setItem('outputColor', ansiColor);
   };
-  
+
+  const toggleColorPicker = () => {
+    setShowColorPicker(!showColorPicker);
+  };
+
+  const colorPickerRefCallback = (element) => {
+    if (element && colorPickerButtonRef.current) {
+      const rect = colorPickerButtonRef.current.getBoundingClientRect();
+      element.style.top = `${rect.bottom + window.scrollY}px`;
+      element.style.left = `${rect.left + window.scrollX}px`;
+    }
+    colorPickerRef.current = element;
+  };
 
   return (
     <div className="container">
@@ -251,6 +283,18 @@ const PythonPlayground = () => {
           <button className="show-files-button" onClick={toggleShowFiles}>
             {showFiles ? 'Hide Files' : 'Show Files'}
           </button>
+          {isMobile && (
+            <>
+              <button
+                className="color-picker-button"
+                onClick={toggleColorPicker}
+                ref={colorPickerButtonRef}
+              >
+                {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
+              </button>
+              <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
+            </>
+          )}
         </div>
         <div className={`files-container ${showFiles ? 'open' : ''}`}>
           <ul>
@@ -276,51 +320,92 @@ const PythonPlayground = () => {
         />
         <button className="load-button" onClick={() => fileInputRef.current.click()}>Load</button>
       </div>
-      <SplitPane split="vertical" minSize={200} defaultSize="50%">
-        <div className="editor-container">
-          <h2 className="playground-heading">chillenz Playground</h2>
-          <AceEditor
-            mode="python"
-            theme="monokai"
-            value={pythonCode}
-            onChange={setPythonCode}
-            fontSize={14}
-            width="100%"
-            className="python-editor"
-            editorProps={{
-              $blockScrolling: true,
-            }}
-            setOptions={{
-              enableBasicAutocompletion: true,
-              enableLiveAutocompletion: true,
-              fontFamily: 'Fira Code, monospace',
-              printMargin: false
-            }}
-          />
-          <div>
-            {isRunning ? (
-              <button className="stop-button" onClick={() => window.location.reload()}>Stop</button>
-            ) : (
-              <button className="run-button" onClick={executePythonCode}>Run</button>
-            )}
-            <button className="clear-button" onClick={clearOutput}>Clear Console</button>
-            <button className="color-picker-button" onClick={() => setShowColorPicker(!showColorPicker)}>
-              {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
-            </button>
-            {showColorPicker && (
-              <div className="color-picker">
-                <SketchPicker
-                  color={`#${outputColor.toString(16)}`}
-                  onChangeComplete={handleColorChangeComplete}
-                />
-              </div>
-            )}
+      {isMobile ? (
+        <>
+          <div className={`editor-container ${showOutput ? 'hidden' : ''}`}>
+            <h2 className="playground-heading">chillenz Playground</h2>
+            <AceEditor
+              mode="python"
+              theme="monokai"
+              value={pythonCode}
+              onChange={setPythonCode}
+              fontSize={14}
+              width="100%"
+              className="python-editor"
+              editorProps={{
+                $blockScrolling: true,
+              }}
+              setOptions={{
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                fontFamily: 'Fira Code, monospace',
+                printMargin: false
+              }}
+            />
+            <div className="mobile-buttons">
+              {isRunning ? (
+                <button className="stop-button" onClick={() => window.location.reload()}>Stop</button>
+              ) : (
+                <button className="run-button" onClick={executePythonCode}>Run</button>
+              )}
+              <button className="clear-button" onClick={clearOutput}>Clear Console</button>
+            </div>
           </div>
-          <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
+          <div className={`output-container ${isInputRunning ? '' : 'hide-cursor'} ${showOutput ? 'show' : 'hidden'}`} ref={terminalRef} style={{ height: '100vh', overflowY: 'auto' }}>
+            <button className="back-button" onClick={() => setShowOutput(false)}>Back</button>
+          </div>
+        </>
+      ) : (
+        <SplitPane split="vertical" minSize={200} defaultSize="50%">
+          <div className="editor-container">
+            <h2 className="playground-heading">chillenz Playground</h2>
+            <AceEditor
+              mode="python"
+              theme="monokai"
+              value={pythonCode}
+              onChange={setPythonCode}
+              fontSize={14}
+              width="100%"
+              className="python-editor"
+              editorProps={{
+                $blockScrolling: true,
+              }}
+              setOptions={{
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                fontFamily: 'Fira Code, monospace',
+                printMargin: false
+              }}
+            />
+            <div>
+              {isRunning ? (
+                <button className="stop-button" onClick={() => window.location.reload()}>Stop</button>
+              ) : (
+                <button className="run-button" onClick={executePythonCode}>Run</button>
+              )}
+              <button className="clear-button" onClick={clearOutput}>Clear Console</button>
+              <button
+                className="color-picker-button"
+                onClick={toggleColorPicker}
+                ref={colorPickerButtonRef}
+              >
+                {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
+              </button>
+              <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
+            </div>
+          </div>
+          <div className={`output-container ${isInputRunning ? '' : 'hide-cursor'}`} ref={terminalRef} style={{ height: '100%', overflowY: 'auto' }}>
+          </div>
+        </SplitPane>
+      )}
+      {showColorPicker && (
+        <div className="color-picker" ref={colorPickerRefCallback}>
+          <SketchPicker
+            color={`#${outputColor.toString(16)}`}
+            onChangeComplete={handleColorChangeComplete}
+          />
         </div>
-        <div className={`output-container ${isInputRunning ? '' : 'hide-cursor'}`} ref={terminalRef} style={{ height: '100%' }}>
-        </div>
-      </SplitPane>
+      )}
     </div>
   );
 };

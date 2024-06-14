@@ -104,7 +104,6 @@ body {
   max-height: 300px;
 }
 
-
 .files-container.closed {
   max-height: 0; /* Height when collapsed */
 }
@@ -154,6 +153,14 @@ body {
   background-color: #c9302c;
 }
 
+.sidebar ul li .rename-button {
+  background-color: #1E90FF;
+}
+
+.sidebar ul li .rename-button:hover {
+  background-color: #1C86EE;
+}
+
 .save-button,
 .load-button {
   background-color: #2965f1;
@@ -194,6 +201,7 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  height: 100vh; /* Ensure it takes the full viewport height */
 }
 
 .python-editor {
@@ -205,8 +213,7 @@ body {
 }
 
 .run-button,
-.clear-button,
-.color-picker-button {
+.clear-button {
   background-color: #3d994c;
   color: white;
   border: none;
@@ -222,10 +229,6 @@ body {
   background-color: #d9534f;
 }
 
-.color-picker-button {
-  background-color: #ab34eb;
-}
-
 .run-button:disabled {
   background-color: #808080;
   cursor: not-allowed;
@@ -237,6 +240,19 @@ body {
 
 .clear-button:hover {
   background-color: #c9302c;
+}
+
+.color-picker-button {
+  background-color: #ab34eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Fira Code', monospace;
+  margin-bottom: 10px;
+  width: auto;
 }
 
 .color-picker-button:hover {
@@ -341,14 +357,77 @@ pre {
   cursor: not-allowed;
 }
 
-.file-buttons .rename-button{
+.file-buttons .rename-button {
   background-color: #2965f1;
 }
 
-.file-buttons .rename-button:hover{
+.file-buttons .rename-button:hover {
   background-color: #0e50eb;
 }
 
 .output-container.hide-cursor .xterm-cursor {
   display: none;
+}
+.color-picker {
+  position: flex;
+  z-index: 1000;
+}
+
+@media (max-width: 768px) {
+  .editor-container, .output-container {
+    flex: none;
+    width: 100%;
+  }
+  .output-container {
+    display: none;
+  }
+  .output-container.show {
+    display: flex;
+  }
+  .mobile-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+  }
+  .color-picker-button, .html-playground-button {
+    display: none;
+  }
+  .sidebar.open .color-picker-button, .sidebar.open .html-playground-button {
+    display: block;
+  }
+  .back-button {
+    display: block;
+    position: absolute;
+    bottom: 10px; /* Positioning at the bottom */
+    left: 90%; /* Centering horizontally */
+    transform: translateX(-50%); /* Centering horizontally */
+    z-index: 1000;
+    background-color: #3d994c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Fira Code', monospace;
+  }
+  .back-button:hover {
+    background-color: #358c3f;
+  }
+  .editor-container.hidden {
+    display: none;
+  }
+  .output-container.hidden {
+    display: none;
+  }
+  .output-container.show {
+    display: flex;
+  }
+  .hamburger-button{
+    top: 10px;
+    right: -425px;
+  }
+  .color-picker-button, .html-playground-button {
+    display: flex;
+  }
 }
