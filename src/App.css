@@ -176,17 +176,17 @@ body {
 }
 
 .load-button{
-background-color: #2965f1;
-color: white;
-border: none;
-padding: 10px 20px;
-border-radius: 20px;
-cursor: pointer;
-font-size: 16px;
-font-family: 'Fira Code', monospace;
-margin: 10px 20px;
-margin-top: 0;
-flex-shrink: 0;
+  background-color: #2965f1;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Fira Code', monospace;
+  margin: 10px 20px;
+  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .save-button:hover,
