@@ -64,10 +64,10 @@ const PythonPlayground = () => {
   }, [pythonCode]);
 
   useEffect(() => {
-  document.body.style.zoom = `${zoomLevel}%`;
-  localStorage.setItem('zoomLevel', zoomLevel);
-}, [zoomLevel]);
-  
+    document.body.style.zoom = `${zoomLevel}%`;
+    localStorage.setItem('zoomLevel', zoomLevel);
+  }, [zoomLevel]);
+
   useEffect(() => {
     localStorage.setItem('outputColor', outputColor);
   }, [outputColor]);
@@ -118,13 +118,13 @@ const PythonPlayground = () => {
   };
 
   const renderZoomSelector = () => (
-  <div className="zoom-selector">
-    <h3>Zoom Level</h3>
-    <button onClick={() => setZoomLevel((level) => Math.max(level - 10, 50))}>-</button>
-    <span>{zoomLevel}%</span>
-    <button onClick={() => setZoomLevel((level) => Math.min(level + 10, 200))}>+</button>
-  </div>
-);
+    <div className="zoom-selector">
+      <h3>Zoom Level</h3>
+      <button onClick={() => setZoomLevel((level) => Math.max(level - 10, 50))}>-</button>
+      <span>{zoomLevel}%</span>
+      <button onClick={() => setZoomLevel((level) => Math.min(level + 10, 200))}>+</button>
+    </div>
+  );
 
   const deleteFile = async (id) => {
     await deleteDoc(doc(db, 'files', id));
@@ -204,30 +204,32 @@ const PythonPlayground = () => {
       },
       yieldLimit: 10,
       inputfunTakesPrompt: true,
-inputfun: (prompt) => {
-  setIsInputRunning(true);
-  return new Promise((resolve) => {
-    if (terminal.current) {
-      writeColoredText(prompt, outputColor);
-      input = '';
-      onKeyRef.current = terminal.current.onKey((key) => {
-        const char = key.domEvent.key;
-        if (char === 'Enter') {
-          terminal.current.write('\r\n');
-          setIsInputRunning(false);
-          resolve(input);
-          onKeyRef.current.dispose();
-        } else if (char === 'Backspace') {
-          input = input.slice(0, -1);
-          terminal.current.write('\b \b');
-        } else {
-          terminal.current.write(`\x1b[38;5;${outputColor}m` + char + `\x1b[0m`);
-          input += char;
-        }
-      });
-    }
-  });
-},
+      inputfun: (prompt) => {
+        setIsInputRunning(true);
+        return new Promise((resolve) => {
+          if (terminal.current) {
+            writeColoredText(prompt, outputColor);
+            input = '';
+            onKeyRef.current = terminal.current.onKey((key) => {
+              const char = key.domEvent.key;
+              if (char === 'Enter') {
+                terminal.current.write('\r\n');
+                setIsInputRunning(false);
+                resolve(input);
+                onKeyRef.current.dispose();
+              } else if (char === 'Backspace') {
+                if (input.length > 0) {
+                  input = input.slice(0, -1);
+                  terminal.current.write('\b \b');
+                }
+              } else {
+                terminal.current.write(`\x1b[38;5;${outputColor}m` + char + `\x1b[0m`);
+                input += char;
+              }
+            });
+          }
+        });
+      },
     });
 
     skulptBuiltinFuncs();
