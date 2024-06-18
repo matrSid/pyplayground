@@ -222,8 +222,8 @@ const PythonPlayground = () => {
                   input = input.slice(0, -1);
                   terminal.current.write('\b \b');
                 }
-              } else {
-                terminal.current.write(`\x1b[38;5;${outputColor}m` + char + `\x1b[0m`);
+              } else if (char.length === 1) {
+                terminal.current.write(`\x1b[38;5;${outputColor}m${char}\x1b[0m`);
                 input += char;
               }
             });
