@@ -1,60 +1,60 @@
 body {
-  background-color: #272822; /* Dark background color */
-  color: #F8F8F2; /* Text color */
+  background-color: #272822;
+  color: #F8F8F2;
   margin: 0;
-  font-family: 'Fira Code', monospace; /* Apply font family to the body */
+  font-family: 'Fira Code', monospace;
 }
 
 .container {
   display: flex;
   flex-direction: row;
-  height: 100vh; /* Full height without footer */
-  overflow: hidden; /* Prevent overflow */
-  position: relative; /* To position the HTML Playground button */
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
 }
 
 .hamburger-button {
-  background: none; /* Background color */
-  border: none; /* No border */
-  color: #F8F8F2; /* Text color */
-  font-size: 30px; /* Font size */
-  cursor: pointer; /* Cursor pointer */
-  padding: 10px; /* Padding */
-  position: absolute; /* Absolute positioning */
-  top: 10px; /* Top position */
-  left: 10px; /* Left position */
-  z-index: 1000; /* High z-index */
+  background: none;
+  border: none;
+  color: #F8F8F2;
+  font-size: 30px;
+  cursor: pointer;
+  padding: 10px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
 }
 
 .sidebar {
-  position: absolute; /* Absolute positioning */
-  top: 0; /* Top position */
-  left: 0; /* Left position */
-  height: 100%; /* Full height */
-  width: 0; /* Initial width */
-  background-color: #2C2C2C; /* Sidebar background color */
-  overflow-x: hidden; /* Hide horizontal overflow */
-  overflow-y: auto; /* Enable vertical scrolling */
-  transition: width 0.2s; /* Smooth transition */
-  z-index: 999; /* High z-index */
-  display: flex; /* Make sidebar a flex container */
-  flex-direction: column; /* Align children vertically */
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background-color: #2C2C2C;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: width 0.2s;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar.open {
-  width: 300px; /* Sidebar open width */
+  width: 300px;
 }
 
 .sidebar h2 {
-  color: #F8F8F2; /* Text color */
-  padding-left: 20px; /* Padding left */
+  color: #F8F8F2;
+  padding-left: 20px;
 }
 
 .file-controls {
   display: flex;
   flex-direction: column;
   padding: 0 20px;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0;
 }
 
 .file-controls .file-input {
@@ -105,7 +105,7 @@ body {
 }
 
 .files-container.closed {
-  max-height: 0; /* Height when collapsed */
+  max-height: 0;
 }
 
 .sidebar ul {
@@ -161,7 +161,8 @@ body {
   background-color: #1C86EE;
 }
 
-.save-button {
+.save-button,
+.load-button {
   background-color: #2965f1;
   color: white;
   border: none;
@@ -171,22 +172,15 @@ body {
   font-size: 16px;
   font-family: 'Fira Code', monospace;
   margin: 10px 20px;
-  margin-top: 1;
   flex-shrink: 0;
 }
 
-.load-button{
-  background-color: #2965f1;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 16px;
-  font-family: 'Fira Code', monospace;
-  margin: 10px 20px;
+.save-button {
+  margin-top: 10px;
+}
+
+.load-button {
   margin-top: 0;
-  flex-shrink: 0;
 }
 
 .save-button:hover,
@@ -305,9 +299,6 @@ pre {
   z-index: 1;
   box-sizing: border-box;
   background-clip: padding-box;
-}
-
-.SplitPane .Resizer {
   transition: all 2s ease;
 }
 
@@ -412,9 +403,9 @@ pre {
   .back-button {
     display: block;
     position: absolute;
-    bottom: 10px; /* Positioning at the bottom */
-    left: 90%; /* Centering horizontally */
-    transform: translateX(-50%); /* Centering horizontally */
+    bottom: 10px;
+    left: 90%;
+    transform: translateX(-50%);
     z-index: 1000;
     background-color: #3d994c;
     color: white;
@@ -446,7 +437,6 @@ pre {
   }
 }
 
-/* Settings modal styles */
 .settings-modal {
   position: fixed;
   top: 50%;
@@ -487,7 +477,6 @@ pre {
   background-color: #358c3f;
 }
 
-/* Improved Settings and Close Settings button styles */
 .settings-button, .close-settings-button {
   background-color: #3d3d3d;
   color: white;
