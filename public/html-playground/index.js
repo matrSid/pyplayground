@@ -41,7 +41,12 @@ function initializeCodeEditors() {
             lineNumbers: true,
             autoCloseTags: true,
             autoCloseBrackets: true,
-            theme: 'panda-syntax'
+            theme: 'panda-syntax',
+            extraKeys: { 'Ctrl-Space': 'autocomplete' },
+            hintOptions: {
+                completeSingle: false,
+                closeOnUnfocus: false
+            }
         };
         if (object) {
             const keys = Object.keys(object);
@@ -56,19 +61,17 @@ function initializeCodeEditors() {
         html: CodeMirror(htmlEditor, getDefaultOptions({
             mode: 'text/html',
             value: '',
+            hint: CodeMirror.hint.html
         })),
         css: CodeMirror(cssEditor, getDefaultOptions({
             mode: 'css',
             value: '',
-            extraKeys: { 'Ctrl-Space': 'autocomplete' },
-            hintOptions: {
-                completeSingle: false,
-                closeOnUnfocus: false
-            }
+            hint: CodeMirror.hint.css
         })),
         js: CodeMirror(jsEditor, getDefaultOptions({
             mode: 'javascript',
-            value: ''
+            value: '',
+            hint: CodeMirror.hint.javascript
         })),
     };
     return codeEditors;
@@ -88,9 +91,28 @@ function setupLivePreviewStudio() {
         updateLiveCSSPreview(codeEditors);
     });
 
-    // Event listener for changes in HTML editor
+    // Event listener for changes in JS editor
     CodeMirror.on(codeEditors.js, 'change', () => {
         updateLiveJSPreview(codeEditors);
+    });
+
+    // Trigger autocompletion on key presses
+    codeEditors.html.on('inputRead', function(cm, event) {
+        if (!cm.state.completionActive && event.origin !== 'setValue') { // Disable while the completion dropdown is active
+            CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+        }
+    });
+
+    codeEditors.css.on('inputRead', function(cm, event) {
+        if (!cm.state.completionActive && event.origin !== 'setValue') {
+            CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+        }
+    });
+
+    codeEditors.js.on('inputRead', function(cm, event) {
+        if (!cm.state.completionActive && event.origin !== 'setValue') {
+            CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+        }
     });
 }
 
