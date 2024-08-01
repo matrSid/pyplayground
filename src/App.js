@@ -510,4 +510,4 @@ const PythonPlayground = () => {
   );
 };
 
-export default PythonPlayground; // sorry
+export default PythonPlayground; // sorry.
