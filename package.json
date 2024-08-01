@@ -58,5 +58,8 @@
   "main": "index.js",
   "repository": "https://github.com/matrSid/pyplayground.git",
   "author": "Rahul Jha <rahulj972@outlook.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "source-map-loader": "^5.0.0"
+  }
 }
