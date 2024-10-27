@@ -1,100 +1,53 @@
 import React, { useState, useRef, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/theme-nord_dark';
 import 'ace-builds/src-noconflict/ext-language_tools';
-import 'ace-builds/src-noconflict/theme-monokai';
-import 'ace-builds/src-noconflict/theme-github';
-import 'ace-builds/src-noconflict/theme-twilight';
-import 'ace-builds/src-noconflict/theme-xcode';
-import Sk from 'skulpt';
-import SplitPane from 'react-split-pane';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from './firebase';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import 'xterm/css/xterm.css';
-import { SketchPicker } from 'react-color';
-import './App.css';
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import { Play, Save, FileUp, X, Folder, Download, ChevronRight, Code2 } from 'lucide-react';
 
-const PythonPlayground = () => {
+// Add Skulpt imports
+import 'skulpt/dist/skulpt.min.js';
+import 'skulpt/dist/skulpt-stdlib.js';
+
+/* global Sk */
+
+export default function ModernPlayground() {
   const [pythonCode, setPythonCode] = useState(localStorage.getItem('pythonCode') || '');
   const [isRunning, setIsRunning] = useState(false);
-  const [currentFile, setCurrentFile] = useState(null);
   const [files, setFiles] = useState([]);
   const [isInputRunning, setIsInputRunning] = useState(false);
-  const [filename, setFilename] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showFiles, setShowFiles] = useState(false);
-  const [outputColor, setOutputColor] = useState(() => {
-    const savedColor = localStorage.getItem('outputColor');
-    return savedColor ? parseInt(savedColor, 10) : 82; // Default to green if no saved color
-  });
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [showOutput, setShowOutput] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [theme, setTheme] = useState(localStorage.getItem('editorTheme') || 'monokai');
-  const [fontSize, setFontSize] = useState(parseInt(localStorage.getItem('editorFontSize'), 10) || 14);
-  const [showSettings, setShowSettings] = useState(false);
+  const [currentFile, setCurrentFile] = useState(null);
+  const [newFileName, setNewFileName] = useState('');
+  
   const terminalRef = useRef(null);
-  const fileInputRef = useRef(null);
   const terminal = useRef(null);
-  const [zoomLevel, setZoomLevel] = useState(parseInt(localStorage.getItem('zoomLevel'), 10) || 100);
   const fitAddon = useRef(null);
+  const fileInputRef = useRef(null);
   const onKeyRef = useRef(null);
-  const colorPickerRef = useRef(null);
-  const colorPickerButtonRef = useRef(null);
-  let input = ''; // Define input variable here
+  let input = '';
 
   useEffect(() => {
     fetchFiles();
     initializeTerminal();
-
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
-        setShowOutput(false);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem('pythonCode', pythonCode);
   }, [pythonCode]);
-
-  useEffect(() => {
-    document.body.style.zoom = `${zoomLevel}%`;
-    localStorage.setItem('zoomLevel', zoomLevel);
-  }, [zoomLevel]);
-
-  useEffect(() => {
-    localStorage.setItem('outputColor', outputColor);
-  }, [outputColor]);
-
-  useEffect(() => {
-    const hasRefreshed = localStorage.getItem('hasRefreshed');
-    if (!hasRefreshed) {
-      localStorage.setItem('hasRefreshed', 'true');
-      window.location.reload();
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('editorTheme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    localStorage.setItem('editorFontSize', fontSize);
-  }, [fontSize]);
 
   const initializeTerminal = () => {
     if (terminalRef.current && !terminal.current) {
       terminal.current = new Terminal({
         theme: {
-          background: '#1e1e1e',
-          foreground: '#8FBC8F',
+          background: '#1a1b26',
+          foreground: '#c0caf5',
+          cursor: '#c0caf5'
         },
+        fontSize: 14,
+        fontFamily: '"JetBrains Mono", monospace',
         cursorBlink: true,
       });
       fitAddon.current = new FitAddon();
@@ -110,105 +63,71 @@ const PythonPlayground = () => {
     setFiles(filesList);
   };
 
-  const createFile = async () => {
-    const newFile = { filename, content: '' };
-    const docRef = await addDoc(collection(db, 'files'), newFile);
-    setFiles([...files, { id: docRef.id, ...newFile }]);
-    setFilename('');
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setPythonCode(e.target.result);
+      reader.readAsText(file);
+    }
   };
 
-  const renderZoomSelector = () => (
-    <div className="zoom-selector">
-      <h3>Zoom Level</h3>
-      <button onClick={() => setZoomLevel((level) => Math.max(level - 10, 50))}>-</button>
-      <span>{zoomLevel}%</span>
-      <button onClick={() => setZoomLevel((level) => Math.min(level + 10, 200))}>+</button>
-    </div>
-  );
+  const saveFile = async () => {
+    if (!newFileName.trim()) return;
+    
+    try {
+      if (currentFile) {
+        await updateDoc(doc(db, 'files', currentFile.id), { 
+          content: pythonCode,
+          filename: newFileName 
+        });
+      } else {
+        await addDoc(collection(db, 'files'), {
+          filename: newFileName,
+          content: pythonCode
+        });
+      }
+      setNewFileName('');
+      fetchFiles();
+    } catch (error) {
+      console.error('Error saving file:', error);
+    }
+  };
 
   const deleteFile = async (id) => {
     await deleteDoc(doc(db, 'files', id));
     fetchFiles();
   };
 
-  const renameFile = async (id) => {
-    const newFilename = prompt('Enter new filename:');
-    if (newFilename) {
-      await updateDoc(doc(db, 'files', id), { filename: newFilename });
-      fetchFiles();
-    }
-  };
-
-  const clearOutput = () => {
-    if (terminal.current) {
-      terminal.current.clear();
-      terminal.current.write('\x1b[H'); // Moves cursor to the top-left corner
-    }
-  };
-
-  // Function to write colored text
-  const writeColoredText = (text, color) => {
-    if (terminal.current) {
-      const colorCode = `\x1b[38;5;${color}m`; // ANSI escape code for 256 colors
-      const resetCode = `\x1b[0m`;
-      terminal.current.write(text.split('\n').map(line => colorCode + line + resetCode).join('\r\n'));
-      terminal.current.scrollToBottom(); // Ensure the terminal auto-scrolls to the bottom
-    }
-  };
-
-  // Define the custom functions and add them to Skulpt's built-in namespace
-  const skulptBuiltinFuncs = () => {
-    const clear = new Sk.builtin.func(() => {
-      clearOutput();
-      return Sk.builtin.none.none$;
-    });
-
-    const sleep = new Sk.builtin.func((seconds) => {
-      return Sk.misceval.promiseToSuspension(new Promise((resolve) => {
-        setTimeout(() => resolve(Sk.builtin.none.none$), Sk.ffi.remapToJs(seconds) * 1000);
-      }));
-    });
-
-    const choice = new Sk.builtin.func((seq) => {
-      const jsSeq = Sk.ffi.remapToJs(seq);
-      const choice = jsSeq[Math.floor(Math.random() * jsSeq.length)];
-      return Sk.ffi.remapToPy(choice);
-    });
-
-    Sk.builtins['clear'] = clear;
-    Sk.builtins['sleep'] = sleep;
-    Sk.builtins['choice'] = choice;
-  };
-
   const executePythonCode = () => {
     setIsRunning(true);
-    if (isMobile) {
-      setShowOutput(true);
-    }
-
     if (terminal.current) {
       terminal.current.clear();
-      terminal.current.write('\x1b[H'); // Moves cursor to the top-left corner
+      terminal.current.write('\x1b[H');
     }
 
+    const output = (text) => {
+      if (terminal.current) {
+        terminal.current.write(text);
+        terminal.current.scrollToBottom();
+      }
+    };
+
     Sk.configure({
-      output: (text) => {
-        const color = text.includes('Error:') ? 196 : outputColor;
-        writeColoredText(text, color);
-      },
+      output,
       read: (filename) => {
-        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][filename] === undefined) {
+        if (Sk.builtinFiles === undefined || 
+            Sk.builtinFiles["files"][filename] === undefined) {
           throw new Error("File not found: '" + filename + "'");
         }
         return Sk.builtinFiles["files"][filename];
       },
-      yieldLimit: 10,
       inputfunTakesPrompt: true,
       inputfun: (prompt) => {
         setIsInputRunning(true);
         return new Promise((resolve) => {
           if (terminal.current) {
-            writeColoredText(prompt, outputColor);
+            terminal.current.write(prompt);
             input = '';
             onKeyRef.current = terminal.current.onKey((key) => {
               const char = key.domEvent.key;
@@ -223,291 +142,156 @@ const PythonPlayground = () => {
                   terminal.current.write('\b \b');
                 }
               } else if (char.length === 1) {
-                terminal.current.write(`\x1b[38;5;${outputColor}m${char}\x1b[0m`);
+                terminal.current.write(char);
                 input += char;
               }
             });
           }
         });
-      },
+      }
     });
-
-    skulptBuiltinFuncs();
 
     Sk.misceval.asyncToPromise(() => {
       return Sk.importMainWithBody("<stdin>", false, pythonCode, true);
     }).then(() => {
-      console.log("Python code executed successfully!");
       setIsRunning(false);
-    }, (err) => {
-      writeColoredText(`\nError: ${err.toString()}`, 196);
-      console.error("Error executing Python code:", err.toString());
+    }).catch((err) => {
+      output(`\nError: ${err.toString()}\n`);
       setIsRunning(false);
     });
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPythonCode(e.target.result);
-      };
-      reader.readAsText(file);
-    }
-  };
-
-  const saveCurrentFile = async () => {
-    if (currentFile) {
-      await updateDoc(doc(db, 'files', currentFile.id), { content: pythonCode });
-      alert('File saved successfully!');
-    } else {
-      const filename = prompt('Enter filename:');
-      if (filename) {
-        const newFile = { filename, content: pythonCode };
-        const docRef = await addDoc(collection(db, 'files'), newFile);
-        setCurrentFile({ id: docRef.id, ...newFile });
-        alert('File saved successfully!');
-      }
-    }
-  };
-
-  const handleSelectFile = (file) => {
-    setCurrentFile(file);
-    setPythonCode(file.content);
-  };
-
-  const toggleShowFiles = () => {
-    setShowFiles(!showFiles);
-  };
-
-  const handleColorChangeComplete = (color) => {
-    const rgb = color.rgb;
-    const ansiColor = 16 + (36 * Math.round(rgb.r / 51)) + (6 * Math.round(rgb.g / 51)) + Math.round(rgb.b / 51);
-    setOutputColor(ansiColor);
-    localStorage.setItem('outputColor', ansiColor);
-  };
-
-  const toggleColorPicker = () => {
-    setShowColorPicker(!showColorPicker);
-  };
-
-  const colorPickerRefCallback = (element) => {
-    if (element && colorPickerButtonRef.current) {
-      const rect = colorPickerButtonRef.current.getBoundingClientRect();
-      element.style.top = `${rect.bottom + window.scrollY}px`;
-      element.style.left = `${rect.left + window.scrollX}px`;
-    }
-    colorPickerRef.current = element;
-  };
-
-  const renderThemeSelector = () => (
-    <div className="theme-selector">
-      <h3>Select Theme</h3>
-      <label>
-        <input
-          type="radio"
-          value="monokai"
-          checked={theme === 'monokai'}
-          onChange={(e) => setTheme(e.target.value)}
-        />
-        Monokai
-      </label>
-      <label>
-        <input
-          type="radio"
-          value="github"
-          checked={theme === 'github'}
-          onChange={(e) => setTheme(e.target.value)}
-        />
-        Github
-      </label>
-      <label>
-        <input
-          type="radio"
-          value="twilight"
-          checked={theme === 'twilight'}
-          onChange={(e) => setTheme(e.target.value)}
-        />
-        Twilight
-      </label>
-      <label>
-        <input
-          type="radio"
-          value="xcode"
-          checked={theme === 'xcode'}
-          onChange={(e) => setTheme(e.target.value)}
-        />
-        Xcode
-      </label>
-    </div>
-  );
-
-  const renderFontSizeSelector = () => (
-    <div className="font-size-selector">
-      <h3>Font Size</h3>
-      <button onClick={() => setFontSize((size) => Math.max(size - 1, 10))}>-</button>
-      <span>{fontSize}</span>
-      <button onClick={() => setFontSize((size) => Math.min(size + 1, 30))}>+</button>
-    </div>
-  );
-
   return (
-    <div className="container">
-      <button className="hamburger-button" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-        ☰
-      </button>
-      <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <br></br>
-        <br></br>
-        <h2>chillenz Playground</h2>
-        <div className="file-controls">
+    <div className="flex h-screen bg-[#0f1117] text-gray-100">
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 transform ${showFiles ? 'translate-x-0' : '-translate-x-full'} w-64 bg-[#1a1b26] p-6 transition-transform duration-300 ease-in-out z-10 flex flex-col`}>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-xl font-bold text-purple-400">Files</h2>
+          <button onClick={() => setShowFiles(false)} className="p-1 hover:bg-gray-700 rounded-full transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex gap-2 mb-6">
           <input
             type="text"
-            value={filename}
-            onChange={(e) => setFilename(e.target.value)}
-            placeholder="New file name"
-            className="file-input"
+            value={newFileName}
+            onChange={(e) => setNewFileName(e.target.value)}
+            placeholder="File name..."
+            className="flex-1 px-3 py-2 bg-[#24283b] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
           />
-          <button className="create-button" onClick={createFile}>Create</button>
-          <button className="show-files-button" onClick={toggleShowFiles}>
-            {showFiles ? 'Hide Files' : 'Show Files'}
+          <button
+            onClick={saveFile}
+            className="p-2 bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors"
+          >
+            <Save className="w-5 h-5" />
           </button>
-          {isMobile && (
-            <>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {files.map((file) => (
+            <div
+              key={file.id}
+              className={`group flex items-center justify-between p-3 mb-2 rounded-lg transition-all ${
+                currentFile?.id === file.id ? 'bg-purple-500 bg-opacity-20' : 'hover:bg-gray-800'
+              }`}
+            >
               <button
-                className="color-picker-button"
-                onClick={toggleColorPicker}
-                ref={colorPickerButtonRef}
+                onClick={() => {
+                  setCurrentFile(file);
+                  setPythonCode(file.content);
+                  setNewFileName(file.filename);
+                }}
+                className="flex items-center flex-1"
               >
-                {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
+                <Code2 className="w-4 h-4 mr-2 text-purple-400" />
+                <span className="truncate">{file.filename}</span>
               </button>
-              <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
-            </>
-          )}
-          <button className="settings-button" onClick={() => setShowSettings(true)}>Settings</button>
+              <button
+                onClick={() => deleteFile(file.id)}
+                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500 rounded transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
         </div>
-        <div className={`files-container ${showFiles ? 'open' : ''}`}>
-          <ul>
-            {files.map((file) => (
-              <li key={file.id} className={currentFile && currentFile.id === file.id ? 'selected' : ''}>
-                <span>{file.filename}</span>
-                <div className="file-buttons">
-                  <button onClick={() => handleSelectFile(file)}>Open</button>
-                  <button className="delete-button" onClick={() => deleteFile(file.id)}>Delete</button>
-                  <button className="rename-button" onClick={() => renameFile(file.id)}>Rename</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <button className="save-button" onClick={saveCurrentFile}>Save</button>
+
         <input
           type="file"
           ref={fileInputRef}
-          style={{ display: 'none' }}
           onChange={handleFileUpload}
           accept=".py"
+          className="hidden"
         />
-        <button className="load-button" onClick={() => fileInputRef.current.click()}>Load</button>
+        <button
+          onClick={() => fileInputRef.current.click()}
+          className="mt-4 w-full py-2 bg-[#24283b] hover:bg-[#2a2f44] rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <FileUp className="w-5 h-5" />
+          Upload File
+        </button>
       </div>
-      {isMobile ? (
-        <>
-          <div className={`editor-container ${showOutput ? 'hidden' : ''}`}>
-            <h2 className="playground-heading">chillenz Playground</h2>
-            <AceEditor
-              mode="python"
-              theme={theme}
-              value={pythonCode}
-              onChange={setPythonCode}
-              fontSize={fontSize}
-              width="100%"
-              className="python-editor"
-              editorProps={{
-                $blockScrolling: true,
-              }}
-              setOptions={{
-                enableBasicAutocompletion: true,
-                enableLiveAutocompletion: true,
-                fontFamily: 'Fira Code, monospace',
-                printMargin: false
-              }}
-            />
-            <div className="mobile-buttons">
-              {isRunning ? (
-                <button className="stop-button" onClick={() => window.location.reload()}>Stop</button>
-              ) : (
-                <button className="run-button" onClick={executePythonCode}>Run</button>
-              )}
-              <button className="clear-button" onClick={clearOutput}>Clear Console</button>
-            </div>
-          </div>
-          <div className={`output-container ${isInputRunning ? '' : 'hide-cursor'} ${showOutput ? 'show' : 'hidden'}`} ref={terminalRef} style={{ height: '100vh', overflowY: 'auto' }}>
-            <button className="back-button" onClick={() => setShowOutput(false)}>Back</button>
-          </div>
-        </>
-      ) : (
-        <SplitPane split="vertical" minSize={200} defaultSize="50%">
-          <div className="editor-container">
-            <h2 className="playground-heading">chillenz Playground</h2>
-            <AceEditor
-              mode="python"
-              theme={theme}
-              value={pythonCode}
-              onChange={setPythonCode}
-              fontSize={fontSize}
-              width="100%"
-              className="python-editor"
-              editorProps={{
-                $blockScrolling: true,
-              }}
-              setOptions={{
-                enableBasicAutocompletion: true,
-                enableLiveAutocompletion: true,
-                fontFamily: 'Fira Code, monospace',
-                printMargin: false
-              }}
-            />
-            <div>
-              {isRunning ? (
-                <button className="stop-button" onClick={() => window.location.reload()}>Stop</button>
-              ) : (
-                <button className="run-button" onClick={executePythonCode}>Run</button>
-              )}
-              <button className="clear-button" onClick={clearOutput}>Clear Console</button>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center p-4 bg-[#1a1b26] border-b border-gray-800">
+          <button
+            onClick={() => setShowFiles(true)}
+            className="p-2 hover:bg-gray-700 rounded-lg transition-colors mr-4"
+          >
+            <Folder className="w-5 h-5" />
+          </button>
+          <h1 className="text-xl font-bold text-purple-400">Python Playground</h1>
+        </div>
+
+        <div className="flex-1 grid grid-cols-2 gap-4 p-4">
+          <div className="relative flex flex-col rounded-lg overflow-hidden border border-gray-800">
+            <div className="p-2 bg-[#1a1b26] border-b border-gray-800 flex items-center justify-between">
+              <span className="text-sm font-medium">Editor</span>
               <button
-                className="color-picker-button"
-                onClick={toggleColorPicker}
-                ref={colorPickerButtonRef}
+                onClick={executePythonCode}
+                disabled={isRunning}
+                className={`px-4 py-1 rounded-full flex items-center gap-2 text-sm ${
+                  isRunning
+                    ? 'bg-gray-700 cursor-not-allowed'
+                    : 'bg-purple-500 hover:bg-purple-600'
+                } transition-colors`}
               >
-                {showColorPicker ? 'Close Color Picker' : 'Change Text Color'}
+                {isRunning ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+                {isRunning ? 'Running...' : 'Run'}
               </button>
-              <a href="/html-playground/index.html" className="html-playground-button">HTML Playground</a>
             </div>
+            <AceEditor
+              mode="python"
+              theme="nord_dark"
+              value={pythonCode}
+              onChange={setPythonCode}
+              fontSize={14}
+              width="100%"
+              height="100%"
+              className="flex-1"
+              setOptions={{
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                showPrintMargin: false,
+                fontFamily: '"JetBrains Mono", monospace'
+              }}
+            />
           </div>
-          <div className={`output-container ${isInputRunning ? '' : 'hide-cursor'}`} ref={terminalRef} style={{ height: '100%' }}>
+
+          <div className="flex flex-col rounded-lg overflow-hidden border border-gray-800">
+            <div className="p-2 bg-[#1a1b26] border-b border-gray-800">
+              <span className="text-sm font-medium">Output</span>
+            </div>
+            <div ref={terminalRef} className="flex-1 bg-[#1a1b26]" />
           </div>
-        </SplitPane>
-      )}
-      {showColorPicker && (
-        <div className="color-picker" ref={colorPickerRefCallback}>
-          <SketchPicker
-            color={`#${outputColor.toString(16)}`}
-            onChangeComplete={handleColorChangeComplete}
-          />
         </div>
-      )}
-      {showSettings && (
-        <div className="settings-modal">
-          <h2>Settings</h2>
-          {renderThemeSelector()}
-          {renderFontSizeSelector()}
-          {renderZoomSelector()}
-          <button className="close-settings-button" onClick={() => setShowSettings(false)}>Close Settings</button>
-        </div>
-      )}
+      </div>
     </div>
   );
-};
-
-export default PythonPlayground; // sorry.
+}
